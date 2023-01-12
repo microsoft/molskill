@@ -1,0 +1,28 @@
+# using default_language_version
+default_language_version:
+    node: 16.14.2
+
+repos:
+-   repo: https://github.com/ambv/black
+    rev: 22.3.0
+    hooks:
+    - id: black
+-   repo: https://gitlab.com/pycqa/flake8
+    rev: 3.8.3
+    hooks:
+    - id: flake8
+-   repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+    -   id: isort
+        args: ["--profile", "black", "--filter-files"]
+-   repo: local
+    hooks:
+    -   id: pyright
+        name: pyright
+        # args: [--warnings]
+        entry: pyright
+        language: node
+        pass_filenames: false
+        types: [ python ]
+        # additional_dependencies: ['pyright@1.1.269']
