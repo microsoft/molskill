@@ -6,11 +6,7 @@ from typing import Callable, List, Tuple
 
 import numpy as np
 import rdkit
-from rdkit.Chem import (
-    Descriptors,
-    MolFromSmiles,
-    RDConfig,
-)
+from rdkit.Chem import Descriptors, MolFromSmiles, RDConfig
 from rdkit.ML.Descriptors import MoleculeDescriptors
 from tqdm import tqdm
 
@@ -82,5 +78,3 @@ def get_rdkit2D_desc(
         rdkit_2d_desc[ii, :] = ds
 
     return rdkit_2d_desc, desc_nms
-
-

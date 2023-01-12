@@ -71,4 +71,3 @@ def calculate_rdkit2d_desc_moments(
     moments["std"] = descriptors.std(axis=0)
 
     return moments, desc_nms
-
