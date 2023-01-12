@@ -1,0 +1,31 @@
+name: molskill
+channels:
+  - conda-forge
+  - pytorch
+  - defaults
+dependencies:
+  - python=3.9
+  - pip=22.1.2
+  - numpy=1.23.1
+  - pandas=1.4.2
+  - statsmodels=0.13.2
+  - scipy=1.8.1
+  - matplotlib=3.5.2
+  - rdkit=2022.03.3
+  - tqdm=4.64.0
+  - scikit-learn=1.0.1
+  - pytorch=1.11
+  - cudatoolkit=11.3
+  - black=22.6.0
+  - httplib2=0.20.4
+  - pre-commit=2.20.0
+  - pyright=1.1.269
+  - pip:
+    - protobuf==3.20.1
+    - pytorch-lightning==1.6.3
+    - PubChemPy==1.0.4
+    - psycopg2==2.9.3
+    - tensorboard==2.9.0
+    - guacamol==0.5.4
+    - pytest-lazy-fixture==0.6.3
+    - pytest==7.2.0
