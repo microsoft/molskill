@@ -1,0 +1,37 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  linux:
+    runs-on: "ubuntu-latest"
+    strategy:
+      matrix:
+        python-version: ['3.9']
+    defaults:
+      run:
+        shell: bash -l {0}
+    name: Linux py ${{ matrix.python-version }} tests
+    steps:
+      - uses: actions/checkout@v2
+      - uses: conda-incubator/setup-miniconda@v2
+        with:
+          activate-environment: molskill
+          environment-file: environment.yml
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: false
+      - run: |
+          conda info
+          pip install pytest
+        name: set pythonpath
+      - run: |
+          echo "PYTHONPATH=/home/runner/work/molskill/molskill" >> $GITHUB_ENV
+        name: test
+      - run: |
+          pytest
