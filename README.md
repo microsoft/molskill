@@ -1,14 +1,45 @@
-# Project
+# MolSkill
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+This repo contains associated code for MolSkill: implcit molecular scoring via chemists in the loop.
 
-As the maintainer of this project, please make a few updates:
+## Installation
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+We recommend that you make a fresh conda environment (currently only Python 3.9 is supported) and install the provided conda package for convenience:
+
+```bash
+conda install molskill
+```
+
+Additionally, you can also use the provided `environment.yml` file for manual installation.
+
+A CUDA-enabled GPU is not required for usage, but strongly recommended for speed if you plan on scoring a large amount of compounds. 
+
+## Usage
+
+This work mainly exposes the `MolSkillScorer` class under the `molskill.scorer` module. We interface with RDKit to provide predictions accordingly. The user only has to provide a list of molecular strings that they wish to score. 
+
+```python
+from molskill.scorer import MolSkillScorer
+
+smiles_strs = ["CCO", "O=C(Oc1ccccc1C(=O)O)C"] 
+
+scorer = MolSkillScorer()
+scores = scorer.score(smiles_strs)
+```
+
+We provide and use by default a pre-trained model on all the data that was collected during the original study. If a user wants to train custom models, please check the `train.py` script also included under this repository.
+
+
+## Citing
+
+If you find this work or parts thereof useful, please consider citing the following BibTex entry:
+
+```
+@article{choung2023
+...
+}
+
+```
 
 ## Contributing
 
