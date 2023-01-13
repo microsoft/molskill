@@ -1,5 +1,7 @@
 # MolSkill
 
+[![ci](https://github.com/microsoft/molskill/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/molskill/actions/workflows/ci.yml)
+
 This repo contains associated code for MolSkill: implcit molecular scoring via chemists in the loop.
 
 ## Installation
