@@ -13,7 +13,7 @@ from tqdm import tqdm
 from molskill.helpers.logging import get_logger
 
 sys.path.append(os.path.join(RDConfig.RDContribDir, "SA_Score"))
-import sascorer  # for sascorer.calculateScore: synthetic accessibility score
+import sascorer  # type: ignore
 
 LOGGER = get_logger(__name__)
 

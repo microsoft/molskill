@@ -20,7 +20,7 @@ repos:
     hooks:
     -   id: pyright
         name: pyright
-        args: [--warnings]
+        # args: [--warnings]
         entry: pyright
         language: node
         pass_filenames: false

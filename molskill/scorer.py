@@ -7,9 +7,9 @@ import pytorch_lightning as pl
 import torch
 from rdkit.Chem import MolFromSmiles
 
-from molskill.helpers.logging import get_logger
 from molskill.data.dataloaders import get_dataloader
 from molskill.data.featurizers import Featurizer, get_featurizer
+from molskill.helpers.logging import get_logger
 from molskill.models.ranknet import LitRankNet, RankNet
 
 LOGGER = get_logger(__name__)
@@ -88,6 +88,11 @@ class MolSkillScorer:
             featurizer=self.featurizer,
         )
         model_out = self.trainer.predict(self.model, dataloaders=loader)
+
+        # shut up pyright
+        assert self.model is not None
+        assert model_out is not None
+
         if self.model.mc_dropout_samples > 1:
             scores_mean, scores_var = [out[0] for out in model_out], [
                 out[1] for out in model_out

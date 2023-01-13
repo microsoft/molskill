@@ -6,11 +6,12 @@ import pandas as pd
 from pytorch_lightning.utilities.seed import seed_everything
 from rdkit.Chem import MolFromSmiles
 from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
 
-from molskill.helpers.cleaners import ensure_readability_and_remove
-from molskill.helpers.logging import get_logger
 from molskill.data.dataloaders import get_dataloader
 from molskill.data.featurizers import AVAILABLE_FEATURIZERS, Featurizer, get_featurizer
+from molskill.helpers.cleaners import ensure_readability_and_remove
+from molskill.helpers.logging import get_logger
 from molskill.models.utils import get_new_model_and_trainer
 from molskill.paths import MODEL_PATH
 
@@ -26,7 +27,7 @@ def train_ranknet(
     regularization_factor: float = 1e-4,
     n_epochs: int = 100,
     log_every: int = 10,
-    val_size: float = 0.2,
+    val_size: float = 0.0,
     seed: Optional[int] = None,
     batch_size: int = 32,
     num_workers: Optional[int] = None,
@@ -54,18 +55,22 @@ def train_ranknet(
     """
     molrpr, target = ensure_readability_and_remove(molrpr, target=target, read_f=read_f)
 
+    val_loaders: List[DataLoader] = []
+
     if val_size > 0:
         train_molrpr, val_molrpr, train_target, val_target = train_test_split(
             molrpr, target, test_size=val_size, random_state=seed
         )
-        val_loader = get_dataloader(
-            val_molrpr,
-            val_target,
-            batch_size=batch_size,
-            shuffle=False,
-            featurizer=featurizer,
-            num_workers=num_workers,
-            read_f=read_f,
+        val_loaders.append(
+            get_dataloader(
+                val_molrpr,
+                val_target,
+                batch_size=batch_size,
+                shuffle=False,
+                featurizer=featurizer,
+                num_workers=num_workers,
+                read_f=read_f,
+            )
         )
 
     else:
@@ -97,16 +102,12 @@ def train_ranknet(
     else:
         model_ckpt = None
 
-    if val_size > 0:
-        trainer.fit(
-            model,
-            train_dataloaders=train_loader,
-            val_dataloaders=val_loader,
-            ckpt_path=model_ckpt,
-        )
-        trainer.validate(model, dataloaders=val_loader)
-    else:
-        trainer.fit(model, train_dataloaders=train_loader, ckpt_path=model_ckpt)
+    trainer.fit(
+        model,
+        train_dataloaders=train_loader,
+        val_dataloaders=val_loaders,
+        ckpt_path=model_ckpt,
+    )
 
 
 if __name__ == "__main__":
