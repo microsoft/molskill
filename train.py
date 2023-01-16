@@ -131,7 +131,7 @@ if __name__ == "__main__":
         "--compound_csv",
         type=str,
         required=True,
-        help="Path to compound .csv file with pair ratings.",
+        help="Path to compound `.csv` file with pair ratings.",
     )
     parser.add_argument(
         "--compound_cols",

@@ -7,3 +7,8 @@ MODEL_PATH = os.path.join(ROOT_PATH, "models")
 MODEL_LOG_PATH = os.path.join(MODEL_PATH, "logs")
 LOG_PATH = os.path.join(ROOT_PATH, "module_logs")
 TEST_PATH = os.path.join(ROOT_PATH, "tests")
+
+DEFAULT_CHECKPOINT_PATH = os.path.join(
+    MODEL_PATH, "default", "checkpoints", "last.ckpt"
+)
+DEFAULT_CHECKPOINT_REMOTE = "https://figshare.com/ndownloader/files/38855451"

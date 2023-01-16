@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import tarfile
 from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
@@ -9,8 +10,10 @@ from rdkit.Chem import MolFromSmiles
 
 from molskill.data.dataloaders import get_dataloader
 from molskill.data.featurizers import Featurizer, get_featurizer
+from molskill.helpers.download import download
 from molskill.helpers.logging import get_logger
-from molskill.models.ranknet import LitRankNet, RankNet
+from molskill.models.ranknet import LitRankNet
+from molskill.paths import DEFAULT_CHECKPOINT_PATH, DEFAULT_CHECKPOINT_REMOTE, ROOT_PATH
 
 LOGGER = get_logger(__name__)
 
@@ -18,17 +21,14 @@ LOGGER = get_logger(__name__)
 class MolSkillScorer:
     def __init__(
         self,
-        model_ckpt: Optional[Union[os.PathLike, str]] = None,
         model: Optional[LitRankNet] = None,
         featurizer: Optional[Featurizer] = None,
         num_workers: Optional[int] = None,
         verbose: bool = True,
     ):
-        """Base hloop scorer class
+        """Base MolSkill scorer class
 
         Args:
-            model_ckpt (Optional[Union[os.PathLike, str]], optional): Path to trained RankNet
-                        model checkpoint. Defaults to None.
             model (Optional[LitRankNet]): Instead of supplying the checkpoint, pass\
                    a `LitRankNet` instance. Defaults to None.
             featurizer (Optional[Featurizer]): featurizer used to train either `model_ckpt` or
@@ -38,21 +38,25 @@ class MolSkillScorer:
             verbose (bool, optional): Controls verbosity of the lightning trainer class.\
                     Defaults to True.
         """
-        assert (model is None) != (
-            model_ckpt is None
-        ), "either model or model_ckpt has to be passed"
-
         if featurizer is None:
             featurizer = get_featurizer("morgan_count_rdkit_2d")
 
         self.featurizer = featurizer
 
-        if model_ckpt is not None:
-            LOGGER.info(f"Attempting to load model from checkpoint {model_ckpt}")
-            self.net = RankNet(input_size=self.featurizer.dim())
-            self.model = LitRankNet.load_from_checkpoint(checkpoint_path=model_ckpt, input_size=featurizer.dim())  # type: ignore
-        else:
-            self.model = model
+        if model is None:
+            if not os.path.exists(DEFAULT_CHECKPOINT_PATH):
+                LOGGER.info(
+                    f"Default model not present; downloading it from {DEFAULT_CHECKPOINT_REMOTE}..."
+                )
+                modelsgz = os.path.join(ROOT_PATH, "models.tar.gz")
+                download(DEFAULT_CHECKPOINT_REMOTE, modelsgz)
+
+                with tarfile.open(modelsgz, "r") as tarhandle:
+                    tarhandle.extractall(ROOT_PATH)
+
+            model = LitRankNet.load_from_checkpoint(checkpoint_path=DEFAULT_CHECKPOINT_PATH, input_size=featurizer.dim())  # type: ignore
+
+        self.model = model
 
         if num_workers is None:
             num_workers = multiprocessing.cpu_count() // 2
