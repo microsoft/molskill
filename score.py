@@ -3,6 +3,7 @@ import argparse
 import pandas as pd
 
 from molskill.data.featurizers import AVAILABLE_FEATURIZERS, get_featurizer
+from molskill.helpers.cleaners import ensure_readability_and_remove
 from molskill.helpers.logging import get_logger
 from molskill.models.ranknet import LitRankNet
 from molskill.scorer import MolSkillScorer
@@ -53,6 +54,7 @@ if __name__ == "__main__":
     cpd_df = pd.read_csv(args.compound_csv)
     molrpr = cpd_df[args.smiles_col].tolist()
 
+    molrpr = ensure_readability_and_remove(molrpr)
     featurizer = get_featurizer(args.featurizer_name)
 
     model = (
