@@ -63,6 +63,7 @@ if __name__ == "__main__":
         else None
     )
     scorer = MolSkillScorer(model=model, featurizer=featurizer)
+    LOGGER.info("Now predicting...")
     scores = scorer.score(molrpr=molrpr)
 
     score_df = pd.DataFrame({"smiles": molrpr, "score": scores})
