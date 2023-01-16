@@ -8,8 +8,8 @@ import torch
 from rdkit.Chem import MolFromSmiles
 from torch.utils.data import DataLoader, Dataset
 
-from molskill.helpers.cleaners import ensure_readability
 from molskill.data.featurizers import Featurizer, get_featurizer
+from molskill.helpers.cleaners import ensure_readability
 
 
 def get_dataloader(
@@ -51,7 +51,7 @@ def get_dataloader(
     )
 
 
-class DataHloop(Dataset, abc.ABC):
+class BaseDataset(Dataset, abc.ABC):
     def __init__(
         self,
         molrpr: List,
@@ -102,7 +102,7 @@ class DataHloop(Dataset, abc.ABC):
         raise NotImplementedError()
 
 
-class PairData(DataHloop):
+class PairData(BaseDataset):
     def __init__(
         self,
         molrpr: List,

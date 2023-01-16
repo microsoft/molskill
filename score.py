@@ -7,12 +7,10 @@ from molskill.helpers.cleaners import ensure_readability_and_remove
 from molskill.paths import MODEL_PATH
 from molskill.scorer import MolSkillScorer
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog=__file__,
-        description="This module gives an example of training and testing a RankNet model given\
-                     a list of compounds and target, then save it in ckpt_fn",
+        description="Scoring module for MolSkill.",
         add_help=True,
     )
     parser.add_argument(

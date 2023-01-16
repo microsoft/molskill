@@ -47,7 +47,7 @@ def train_ranknet(
                                                  Defaults to 1e-4.
         n_epochs (int, optional): Number of maximum epochs to train. Defaults to 100.
         log_every (int, optional): Logging interval when training. Defaults to 10.
-        val_size (float, optional): Random split validation set fraction. Defaults to 0.2.
+        val_size (float, optional): Random split validation set fraction. Defaults to 0.0.
         seed (Optional[int], optional): Random seed. Defaults to None.
         batch_size (int, optional): Batch size. Defaults to 32.
         num_workers (Optional[int]): Number of threads to use when loading data from the dataloaders.\
@@ -74,6 +74,9 @@ def train_ranknet(
         )
 
     else:
+        LOGGER.info(
+            "No validation data provided. Performing production training run on entire set."
+        )
         train_molrpr, train_target = molrpr, target
 
     train_loader = get_dataloader(
@@ -96,6 +99,7 @@ def train_ranknet(
     )
 
     # use the last model to resume training if available
+    assert save_dir is not None  # shut up pyright
     model_ckpt = os.path.join(save_dir, "checkpoints", "last.ckpt")
     if os.path.exists(model_ckpt):
         LOGGER.info(f"Found checkpoint in {model_ckpt}, resuming training.")
@@ -113,7 +117,7 @@ def train_ranknet(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         prog=__file__,
-        description="This module gives an example of training and testing a RankNet model given a list of compounds and target, then save it in ckpt_fn",
+        description="MolSkill training module for a RankNet model on pair preference data.",
         add_help=True,
     )
     parser.add_argument(
@@ -127,13 +131,13 @@ if __name__ == "__main__":
         "--compound_csv",
         type=str,
         required=True,
-        help="Path to compound and rating .csv file.",
+        help="Path to compound .csv file with pair ratings.",
     )
     parser.add_argument(
         "--compound_cols",
         type=List[str],
         default=["smiles_i", "smiles_j"],
-        help="Column names with SMILES for each comparison. 2 must be provided",
+        help="Column names with SMILES for each comparison.",
     )
     parser.add_argument(
         "--rating_col",
@@ -145,14 +149,14 @@ if __name__ == "__main__":
         "--val_size",
         type=float,
         default=0.0,
-        help="Size of validation set (0-1)",
+        help="Fraction of compounds to use for validation during training [0.0-1)",
     )
     parser.add_argument(
         "--regularization_factor",
         type=float,
         default=1e-4,
         help="Regularization factor for the learned scores. \
-            If > 0.0, it forces them to be centered at the real origin.",
+            If > 0.0, it encourages optimization to center them the real origin.",
     )
     parser.add_argument("--batch_size", type=int, default=32, help="Batch size")
     parser.add_argument("--lr", type=float, default=3e-4, help="Learning rate")
@@ -161,26 +165,26 @@ if __name__ == "__main__":
         dest="log_every",
         type=int,
         default=20,
-        help="Log metrics every `log_every` steps",
+        help="Log metrics every `log_every` steps.",
     )
     parser.add_argument(
         "--n_epochs",
         dest="n_epochs",
         type=int,
         default=100,
-        help="Maximum number of epochs to train a model",
+        help="Maximum number of epochs for training.",
     )
     parser.add_argument(
         "--featurizer_name",
         choices=list(AVAILABLE_FEATURIZERS.keys()),
         default="morgan_count_rdkit_2d",
-        help="choose which molecular representation to use",
+        help="Molecular representation to use.",
     )
     parser.add_argument(
         "--num_workers",
         type=int,
         default=None,
-        help="How many threads to use during data loading",
+        help="Workers to use (processes) during training. Default is half of the available cores.",
     )
     parser.add_argument("--seed", type=int, default=None, help="Random seed")
     args = parser.parse_args()
