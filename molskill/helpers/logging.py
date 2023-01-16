@@ -4,7 +4,7 @@ import sys
 
 # Idea borrowed from
 # https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/utils/logging.py
-def get_logger(name=None, level=logging.INFO) -> logging.Logger:
+def get_logger(name: str = None, level=logging.INFO) -> logging.Logger:
     """Returns a logger that is configured as:
     - by default INFO level or higher messages are logged out in STDOUT.
     - format includes file name, line number, etc.

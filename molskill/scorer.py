@@ -70,6 +70,7 @@ class MolSkillScorer:
         molrpr: Union[List[str], List[Tuple[str, str]]],
         batch_size: int = 32,
         read_f: Callable = MolFromSmiles,
+        check_readable: bool = False,
     ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
         """Scores a list of compounds
 
@@ -79,6 +80,7 @@ class MolSkillScorer:
             batch_size (int, optional): Batch size for inference. Defaults to 32.
             read_f (Callable, optional): rdkit function to read the molecular strings\
                    in `cpds_strings`. Defaults to MolFromSmiles.
+            check_readable (bool): Whether to perform reading sanity checks before running the model
 
         Returns:
             np.ndarray: Scores for the compounds provided
@@ -90,6 +92,7 @@ class MolSkillScorer:
             shuffle=False,
             num_workers=self.num_workers,
             featurizer=self.featurizer,
+            check_readable=check_readable,
         )
         model_out = self.trainer.predict(self.model, dataloaders=loader)
 

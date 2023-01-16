@@ -9,7 +9,7 @@ from rdkit.Chem import MolFromSmiles
 from torch.utils.data import DataLoader, Dataset
 
 from molskill.data.featurizers import Featurizer, get_featurizer
-from molskill.helpers.cleaners import ensure_readability
+from molskill.helpers.cleaners import ensure_readability_and_remove
 
 
 def get_dataloader(
@@ -20,8 +20,10 @@ def get_dataloader(
     featurizer: Optional[Featurizer] = None,
     num_workers: Optional[int] = None,
     read_f: Callable = MolFromSmiles,
+    check_readable: bool = False,
 ) -> DataLoader:
-    """Returns PyG DataLoader
+    """Generic factory function that returns a Pytorch dataLoader
+    for MolSkill.
 
     Args:
         molrpr (Union[List[str], List[Tuple[str, str]]]): List (or list of pairs) of molecular representations.
@@ -30,14 +32,23 @@ def get_dataloader(
         shuffle (bool, Optional): whether or not shuffling the batch at every epoch. Default to False
         featurizer (FingerprintFeaturizer, Optional): Default to MorganFingerprint
         read_f (Callable, optional): rdkit function to read molecules
+        check_readable (bool): Sanity checks whether molecules in `molrpr` are readable
     """
     if isinstance(molrpr[0], (list, tuple)):
-        data = PairData(
-            molrpr=molrpr, target=target, featurizer=featurizer, read_f=read_f
+        data = PairDataset(
+            molrpr=molrpr,
+            target=target,
+            featurizer=featurizer,
+            read_f=read_f,
+            check_readable=check_readable,
         )
     elif isinstance(molrpr[0], str):
-        data = SingleData(
-            molrpr=molrpr, target=target, featurizer=featurizer, read_f=read_f
+        data = SingleDataset(
+            molrpr=molrpr,
+            target=target,
+            featurizer=featurizer,
+            read_f=read_f,
+            check_readable=check_readable,
         )
     else:
         raise ValueError(
@@ -60,37 +71,38 @@ class BaseDataset(Dataset, abc.ABC):
         check_readable: bool = True,
         featurizer: Optional[Featurizer] = None,
     ) -> None:
+        """Base dataset class for MolSkill
+
+        Args:
+            molrpr (List): A list of molecular representations (e.g. SMILES) or a list of
+                           tuples (length 2) of molecular representations.
+            target (Optional[Union[List, np.ndarray]], optional): A list of target values for
+                           each molecule present in `molrpr`. Defaults to None.
+            read_f (Callable, optional): Function to use to read items in `molrpr`. Defaults
+                           to MolFromSmiles.
+            featurizer (Optional[Featurizer], optional): Featurizer to use. Defaults to None.
+            check_readable (bool, optional): Checks whether the items in `molrpr` are readable
+                           by `read_f` and remove unreadable ones. Defaults to True.
+        """
         self.molrpr = molrpr
         self.target = target
         self.read_f = read_f
         super().__init__()
 
-        self.is_pair_data = True if isinstance(self.molrpr[0], (tuple, list)) else False
         if check_readable:
-            self.sanity_read()
-        self.featurizer = featurizer
+            ensured_readable = ensure_readability_and_remove(
+                molrpr=self.molrpr, target=self.target
+            )
+
+            if self.target is not None:
+                self.molrpr, self.target = ensured_readable
+            else:
+                self.molrpr = ensured_readable
+
         if featurizer is None:
-            self.featurizer = get_featurizer("morgan_count_rdkit_2d")
+            featurizer = get_featurizer("morgan_count_rdkit_2d")
 
-    def sanity_read(self) -> None:
-        if self.is_pair_data:
-            valid_idx_i = ensure_readability(
-                [rpr[0] for rpr in self.molrpr], read_f=self.read_f
-            )
-            valid_idx_j = ensure_readability(
-                [rpr[1] for rpr in self.molrpr], read_f=self.read_f
-            )
-            valid_idx_i, valid_idx_j = set(valid_idx_i), set(valid_idx_j)
-            valid_idx = valid_idx_i.intersection(valid_idx_j)
-        else:
-            valid_idx = set(
-                ensure_readability([rpr for rpr in self.molrpr], read_f=self.read_f)
-            )
-
-        self.molrpr = [rpr for idx, rpr in enumerate(self.molrpr) if idx in valid_idx]
-
-        if self.target is not None:
-            self.target = [t for idx, t in enumerate(self.target) if idx in valid_idx]
+        self.featurizer = featurizer
 
     def __getitem__(self, index: int):
         raise NotImplementedError()
@@ -102,7 +114,7 @@ class BaseDataset(Dataset, abc.ABC):
         raise NotImplementedError()
 
 
-class PairData(BaseDataset):
+class PairDataset(BaseDataset):
     def __init__(
         self,
         molrpr: List,
@@ -111,6 +123,10 @@ class PairData(BaseDataset):
         featurizer: Optional[Featurizer] = None,
         check_readable: bool = True,
     ) -> None:
+        """
+        Same as `BaseDataset` but assuming that that `molrpr` is going to contain
+        a list of pairs of molecular representations.
+        """
         super().__init__(
             molrpr=molrpr,
             target=target,
@@ -138,7 +154,7 @@ class PairData(BaseDataset):
         return torch.from_numpy(self.featurizer.get_feat(mol))
 
 
-class SingleData(PairData):
+class SingleDataset(PairDataset):
     def __init__(
         self,
         molrpr: List,
@@ -147,6 +163,10 @@ class SingleData(PairData):
         featurizer: Optional[Featurizer] = None,
         check_readable=True,
     ) -> None:
+        """
+        Same as `BaseDataset` but assuming `molrpr` is going
+        to contain a list of molecular representations
+        """
         super().__init__(
             molrpr=molrpr,
             target=target,
