@@ -16,6 +16,7 @@ Additionally, you can also use the provided `environment.yml` file for manual in
 
 A CUDA-enabled GPU is not required for usage, but strongly recommended for speed if you plan on scoring a large amount of compounds. 
 
+
 ## Usage
 
 This work mainly exposes the `MolSkillScorer` class under the `molskill.scorer` module. We interface with RDKit to provide predictions accordingly. The user only has to provide a list of molecular strings that they wish to score. 

@@ -18,7 +18,7 @@ if __name__ == "__main__":
         type=str,
         default=os.path.join(MODEL_PATH, "default", "checkpoints", "last.ckpt"),
         required=False,
-        help="Path to model checkpoint file",
+        help="Path to model checkpoint (.ckpt) file",
     )
     parser.add_argument(
         "--compound_csv",

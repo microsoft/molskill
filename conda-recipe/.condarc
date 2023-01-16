@@ -1,0 +1,5 @@
+channels:
+  - defaults
+  - pytorch
+  - conda-forge
+channel_priority: flexible
