@@ -32,7 +32,7 @@ class MolSkillScorer:
             model (Optional[LitRankNet]): Instead of supplying the checkpoint, pass
                    a `LitRankNet` instance. Defaults to None.
             featurizer (Optional[Featurizer]): featurizer used to train either `model_ckpt` or
-                       `model`.
+                       `model`. Default is count Morgan fingerprints and rdkit 2d descriptors.
             num_workers (Optional[int]): Number of workers to use in the dataloader. Default is
                         half the available threads.
             verbose (bool, optional): Controls verbosity of the lightning trainer class.

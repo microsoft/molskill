@@ -189,6 +189,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=None, help="Random seed")
     args = parser.parse_args()
 
+    os.makedirs(MODEL_PATH, exist_ok=True)
     assert (
         len(args.compound_cols) == 2
     ), f"Compound columns need to be 2, {len(args.compound_cols)} passed instead"
