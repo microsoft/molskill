@@ -92,12 +92,14 @@ def ensure_readability_and_remove(
         of molecular strings
         target (Optional[List[float]], optional): An optional target variable (e.g., ratings). Defaults to None.
         read_f (Callable, optional): A function to read those strings. Defaults to MolFromSmiles.
-        cond_fs (List[Callable]): list of functions that checks conditions of molecule, defauts to None, which is lambda x: True, always returns True
+        cond_fs (List[Callable]): list of functions that checks conditions of molecule, defauts to None, which
+                                  is lambda x: True, always returns True
         verbose (bool): Whether to print progress bar
 
     Returns:
         molrpr (Union[List[str], List[Tuple[str, str]]]): Readable molecular string in the same format as input
-        target (Optional[List[float]], optional): An optional target variable, only for readable mols. When target is None, not returned
+        target (Optional[List[float]], optional): An optional target variable, only for readable mols. When target
+                                                  is None, not returned
     """
     if isinstance(molrpr[0], str):
         read_fun = ensure_readability

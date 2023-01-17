@@ -15,7 +15,7 @@ from molskill.models.ranknet import LitRankNet, RankNet
 LOGGER = get_logger(__name__)
 
 
-def setup_seed(seed):
+def setup_seed(seed: int):
     """Set seed for all torch and cuda dependencies
 
     Args:
@@ -45,11 +45,11 @@ def get_new_model_and_trainer(
     When resume_from_saved == True, use the last saved ckpt to resume the training.
 
     Args:
-        ckpt_path (os.PathLike | str): directory path to save model ckpt
+        save_dir (os.PathLike | str): directory path to save model ckpt
         lr (float, optional): learning rate to initialize LitRankNet model. Defaults to 3e-4.
         n_epochs (int, optional): max_epoch to initialize pl.Trainer. Defaults to 100.
         log_every (int, optional): log_every_n_steps to initialize pl.Trainer. Defaults to 20.
-        regularization_factor (float, optional): regularization factor for the (norm) of learned scores.\
+        regularization_factor (float, optional): regularization factor for the (norm) of learned scores.
                                                  If > 0.0, it will encourage them to be centered around 0.
         dropout_p (float, optional): mc dropout probability to initialize LitRankNet model. Defaults to 0.2.
         mc_dropout_samples (int, optional): the number of samples for mc dropout

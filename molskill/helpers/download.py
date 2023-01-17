@@ -5,7 +5,7 @@ from tqdm import tqdm
 
 
 def download(src: str, dest: str) -> None:
-    """Simple request.get with progress bar
+    """Simple GET request with progress bar
 
     Args:
         src (str): Source link to download from

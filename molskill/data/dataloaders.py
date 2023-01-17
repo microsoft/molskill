@@ -9,7 +9,9 @@ from rdkit.Chem import MolFromSmiles
 from torch.utils.data import DataLoader, Dataset
 
 from molskill.data.featurizers import Featurizer, get_featurizer
-from molskill.helpers.cleaners import ensure_readability_and_remove
+from molskill.helpers.logging import get_logger
+
+LOGGER = get_logger(__name__)
 
 
 def get_dataloader(
@@ -20,9 +22,8 @@ def get_dataloader(
     featurizer: Optional[Featurizer] = None,
     num_workers: Optional[int] = None,
     read_f: Callable = MolFromSmiles,
-    check_readable: bool = False,
 ) -> DataLoader:
-    """Generic factory function that returns a Pytorch dataLoader
+    """Generic factory function that returns a Pytorch `DataLoader`
     for MolSkill.
 
     Args:
@@ -31,8 +32,9 @@ def get_dataloader(
         batch_size (int, default: 32): batch size for the Dataloader
         shuffle (bool, Optional): whether or not shuffling the batch at every epoch. Default to False
         featurizer (FingerprintFeaturizer, Optional): Default to MorganFingerprint
+        num_workers (int, Optional): Number of processes to use during dataloading. Default is half of the
+                                     available cores.
         read_f (Callable, optional): rdkit function to read molecules
-        check_readable (bool): Sanity checks whether molecules in `molrpr` are readable
     """
     if isinstance(molrpr[0], (list, tuple)):
         data = PairDataset(
@@ -40,7 +42,6 @@ def get_dataloader(
             target=target,
             featurizer=featurizer,
             read_f=read_f,
-            check_readable=check_readable,
         )
     elif isinstance(molrpr[0], str):
         data = SingleDataset(
@@ -48,7 +49,6 @@ def get_dataloader(
             target=target,
             featurizer=featurizer,
             read_f=read_f,
-            check_readable=check_readable,
         )
     else:
         raise ValueError(
@@ -68,7 +68,6 @@ class BaseDataset(Dataset, abc.ABC):
         molrpr: List,
         target: Optional[Union[List, np.ndarray]] = None,
         read_f: Callable = MolFromSmiles,
-        check_readable: bool = True,
         featurizer: Optional[Featurizer] = None,
     ) -> None:
         """Base dataset class for MolSkill
@@ -81,23 +80,11 @@ class BaseDataset(Dataset, abc.ABC):
             read_f (Callable, optional): Function to use to read items in `molrpr`. Defaults
                            to MolFromSmiles.
             featurizer (Optional[Featurizer], optional): Featurizer to use. Defaults to None.
-            check_readable (bool, optional): Checks whether the items in `molrpr` are readable
-                           by `read_f` and remove unreadable ones. Defaults to True.
         """
         self.molrpr = molrpr
         self.target = target
         self.read_f = read_f
         super().__init__()
-
-        if check_readable:
-            ensured_readable = ensure_readability_and_remove(
-                molrpr=self.molrpr, target=self.target
-            )
-
-            if self.target is not None:
-                self.molrpr, self.target = ensured_readable
-            else:
-                self.molrpr = ensured_readable
 
         if featurizer is None:
             featurizer = get_featurizer("morgan_count_rdkit_2d")
@@ -121,7 +108,6 @@ class PairDataset(BaseDataset):
         target: Optional[Union[List, np.ndarray]] = None,
         read_f: Callable = MolFromSmiles,
         featurizer: Optional[Featurizer] = None,
-        check_readable: bool = True,
     ) -> None:
         """
         Same as `BaseDataset` but assuming that that `molrpr` is going to contain
@@ -131,7 +117,6 @@ class PairDataset(BaseDataset):
             molrpr=molrpr,
             target=target,
             read_f=read_f,
-            check_readable=check_readable,
             featurizer=featurizer,
         )
 
@@ -161,7 +146,6 @@ class SingleDataset(PairDataset):
         target: Optional[Union[List, np.ndarray]] = None,
         read_f: Callable = MolFromSmiles,
         featurizer: Optional[Featurizer] = None,
-        check_readable=True,
     ) -> None:
         """
         Same as `BaseDataset` but assuming `molrpr` is going
@@ -171,7 +155,6 @@ class SingleDataset(PairDataset):
             molrpr=molrpr,
             target=target,
             read_f=read_f,
-            check_readable=check_readable,
             featurizer=featurizer,
         )
 

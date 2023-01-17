@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score
 from torch.optim import Adam
 
-_NON_RECOGNISED_INPUT_TYPE = ValueError(
+_NOT_RECOGNISED_INPUT_TYPE = ValueError(
     "Not recognised input format, should be either tensor or tuple of tensors"
 )
 
@@ -21,7 +21,7 @@ def compute_metrics(
     prob_thresh: float = 0.5,
     target_prob: bool = False,
 ) -> Dict[str, torch.Tensor]:
-    """compute metrics and return not None metrics
+    """Computes binary classification metrics
 
     Args:
         logit (torch.Tensor): output logits from model
@@ -60,6 +60,15 @@ class RankNet(nn.Module):
         n_layers: int = 3,
         dropout_p: float = 0.0,
     ) -> None:
+        """Basic RankNet implementation. Pairs of samples are classified
+        according to sigmoid(s_i - s_j) where s_i, s_j are learned scores
+
+        Args:
+            input_size (int, optional): Descriptor size for each sample. Defaults to 2048.
+            hidden_size (int, optional): Number of neurons in hidden layers. Defaults to 256.
+            n_layers (int, optional): Number of hidden layers. Defaults to 3.
+            dropout_p (float, optional): Dropout probability. Defaults to 0.0.
+        """
         super(RankNet, self).__init__()
         self.encoder = nn.Sequential(
             nn.Linear(input_size, hidden_size), nn.Dropout(dropout_p), nn.ReLU()
@@ -197,15 +206,16 @@ class LitRankNet(pl.LightningModule):
         ],
         batch_idx: int = 0,
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
-        """Prediciton on test time, when pairs of Tensors are inputted, predictions are score difference and variance of this values.
-        when Tensor (single smiles) is inputted, predictions are score for that compounds and variance of them
+        """Test-time prediction method. When a tuple of Tensors is fed to `new_batch`, predictions as score
+        differences between the tensors are returned. When a single Tensor is fed, a single score is returned.
+        If MC dropout is set, predictions are returned as a tuple (mean, variance).
         Args:
             new_batch (Tuple[Tensor, Tensor] | Tuple[Tuple[Tensor, Tensor], Tensor] | Tensor): batch
             batch_idx (int): batch index
 
         Returns:
-            prob (np.ndarray): predictions of the batch
-            uncertainty (np.ndarray): uncertainty measured as variance of the predictions,
+            (np.ndarray): Mean predictions of the batch.
+            (np.ndarray, optional): Uncertainty measured as variance of the predictions.
         """
         if isinstance(new_batch, Sequence):
             if isinstance(new_batch[0], Sequence):
@@ -213,13 +223,13 @@ class LitRankNet(pl.LightningModule):
             elif isinstance(new_batch[0], torch.Tensor):
                 pred_fun = self.net.score
             else:
-                raise _NON_RECOGNISED_INPUT_TYPE
+                raise _NOT_RECOGNISED_INPUT_TYPE
             new_batch = new_batch[0]
 
         elif isinstance(new_batch, torch.Tensor):
             pred_fun = self.net.score
         else:
-            raise _NON_RECOGNISED_INPUT_TYPE
+            raise _NOT_RECOGNISED_INPUT_TYPE
 
         return self._predict(new_batch, fun=pred_fun)
 
@@ -261,7 +271,7 @@ class LitRankNet(pl.LightningModule):
 
 
 def enable_dropout(model: RankNet, dropout_p: float = 0.0):
-    """Function to enable the dropout layers during test-time"""
+    """Function to enable dropout layers during test-time"""
     for m in model.modules():
         if m.__class__.__name__.startswith("Dropout"):
             m.train()

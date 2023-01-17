@@ -19,14 +19,7 @@ LOGGER = get_logger(__name__)
 
 
 def get_num_fused_rings(mol: rdkit.Chem.rdchem.Mol) -> int:
-    """returns the maximun number of fused rings
-
-    Args:
-        mol (rdkit.Chem.rdchem.Mol): rdkit mol
-
-    Returns:
-        int: the maximun number of fused rings
-    """
+    """Maximum number of fused rings in `mol`"""
     ring_info = mol.GetRingInfo()
     # finding all pairs of fused rings
     bond_rings = defaultdict(set)
@@ -53,7 +46,7 @@ def get_rdkit2D_desc(
 ) -> Tuple[np.ndarray, List[str]]:
     """
     Taken from https://drzinph.com/rdkit_2d-descriptors-in-python-part-4/
-    Assessed by OHC May 2022
+    Assessed by OHC in May 2022
 
     args:
         molrpr: list of molecular representation strings. e.g., smiles

@@ -29,13 +29,13 @@ class MolSkillScorer:
         """Base MolSkill scorer class
 
         Args:
-            model (Optional[LitRankNet]): Instead of supplying the checkpoint, pass\
+            model (Optional[LitRankNet]): Instead of supplying the checkpoint, pass
                    a `LitRankNet` instance. Defaults to None.
             featurizer (Optional[Featurizer]): featurizer used to train either `model_ckpt` or
                        `model`.
-            num_workers (Optional[int]): Number of workers to use in the dataloader. Default is\
+            num_workers (Optional[int]): Number of workers to use in the dataloader. Default is
                         half the available threads.
-            verbose (bool, optional): Controls verbosity of the lightning trainer class.\
+            verbose (bool, optional): Controls verbosity of the lightning trainer class.
                     Defaults to True.
         """
         if featurizer is None:
@@ -70,17 +70,16 @@ class MolSkillScorer:
         molrpr: Union[List[str], List[Tuple[str, str]]],
         batch_size: int = 32,
         read_f: Callable = MolFromSmiles,
-        check_readable: bool = False,
     ) -> Union[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
-        """Scores a list of compounds
+        """Scores a list of compounds strings.
 
         Args:
-            cpds_strings (Union[List[str], List[Tuple[str, str]]]): A list of molecular strings, or a list of tuples of molecular strings if using
-                                                                    paired data.
+            cpds_strings (Union[List[str], List[Tuple[str, str]]]): A list of molecular strings,
+                                                                    or a list of tuples of molecular
+                                                                    strings if using paired data.
             batch_size (int, optional): Batch size for inference. Defaults to 32.
-            read_f (Callable, optional): rdkit function to read the molecular strings\
+            read_f (Callable, optional): rdkit function to read the molecular strings
                    in `cpds_strings`. Defaults to MolFromSmiles.
-            check_readable (bool): Whether to perform reading sanity checks before running the model
 
         Returns:
             np.ndarray: Scores for the compounds provided
@@ -92,7 +91,6 @@ class MolSkillScorer:
             shuffle=False,
             num_workers=self.num_workers,
             featurizer=self.featurizer,
-            check_readable=check_readable,
         )
         model_out = self.trainer.predict(self.model, dataloaders=loader)
 
