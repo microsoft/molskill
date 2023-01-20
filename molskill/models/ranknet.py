@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, Dict, Optional, Sequence, Tuple, Union
+from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
 import pytorch_lightning as pl
@@ -12,6 +12,8 @@ from torch.optim import Adam
 _NOT_RECOGNISED_INPUT_TYPE = ValueError(
     "Not recognised input format, should be either tensor or tuple of tensors"
 )
+
+BatchTarget = Tuple[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]
 
 
 def compute_metrics(
@@ -61,7 +63,8 @@ class RankNet(nn.Module):
         dropout_p: float = 0.0,
     ) -> None:
         """Basic RankNet implementation. Pairs of samples are classified
-        according to sigmoid(s_i - s_j) where s_i, s_j are learned scores
+        according to sigmoid(s_i - s_j) where s_i, s_j are scores learned
+        during training.
 
         Args:
             input_size (int, optional): Descriptor size for each sample. Defaults to 2048.
@@ -95,7 +98,7 @@ class RankNet(nn.Module):
         Args:
             x: input fingerprints // (n_samples, n_feat)
         """
-        with torch.no_grad():
+        with torch.inference_mode():
             return self.encoder(x)
 
 
@@ -142,6 +145,9 @@ class LitRankNet(pl.LightningModule):
     def get_reg_loss(
         score_i: torch.Tensor, score_j: torch.Tensor, regularization_factor: float
     ) -> torch.Tensor:
+        """Returns regularization loss for the scores ||s||^2 / batch_size
+        and scales it by `regularization_factor`
+        """
         batch_size = score_i.size(0)
         reg_loss = (
             regularization_factor
@@ -150,21 +156,21 @@ class LitRankNet(pl.LightningModule):
         )
         return reg_loss
 
+    def get_scores_logit_target(self, batch: BatchTarget):
+        (x_i, x_j), target = batch
+        return self.net(x_i, x_j), target
+
     def forward(
         self, x_i: torch.Tensor, x_j: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-        self.net.eval()
-        with torch.no_grad():
-            return self.net(x_i, x_j)
+        return self.net(x_i, x_j)
 
     def score(self, batch) -> torch.Tensor:
         self.net.eval()
         return self.net.score(batch)
 
-    def training_step(self, train_batch, batch_idx: int) -> torch.Tensor:
-        (x_i, x_j), target = train_batch
-
-        score_i, score_j, logit = self.net(x_i, x_j)
+    def training_step(self, train_batch: BatchTarget, batch_idx: int) -> torch.Tensor:
+        (score_i, score_j, logit), target = self.get_scores_logit_target(train_batch)
         loss = self.loss_fn(logit, target)
         reg_loss = self.get_reg_loss(score_i, score_j, self.regularization_factor)
 
@@ -174,9 +180,8 @@ class LitRankNet(pl.LightningModule):
         self.log("train/regloss", reg_loss.item())
         return loss + reg_loss
 
-    def validation_step(self, val_batch, batch_idx: int) -> torch.Tensor:
-        (x_i, x_j), target = val_batch
-        score_i, score_j, logit = self.net(x_i, x_j)
+    def validation_step(self, val_batch: BatchTarget, batch_idx: int) -> torch.Tensor:
+        (score_i, score_j, logit), target = self.get_scores_logit_target(val_batch)
         loss = self.loss_fn(logit, target)
         reg_loss = self.get_reg_loss(score_i, score_j, self.regularization_factor)
 
@@ -186,9 +191,11 @@ class LitRankNet(pl.LightningModule):
         self.log("val/regloss", reg_loss.item())
         return loss + reg_loss
 
-    def test_step(self, test_batch, batch_idx: int = 0) -> Dict[str, torch.Tensor]:
-        (x_i, x_j), target = test_batch
-        score_i, score_j, logit = self.net(x_i, x_j)
+    def test_step(
+        self, test_batch: BatchTarget, batch_idx: int = 0
+    ) -> Dict[str, torch.Tensor]:
+        (score_i, score_j, logit), target = self.get_scores_logit_target(test_batch)
+
         reg_loss = self.get_reg_loss(score_i, score_j, self.regularization_factor)
 
         metrics = compute_metrics(logit, target, target_prob=self.target_prob)
@@ -202,7 +209,7 @@ class LitRankNet(pl.LightningModule):
         new_batch: Union[
             torch.Tensor,
             Tuple[torch.Tensor, torch.Tensor],
-            Tuple[Tuple[torch.Tensor, torch.Tensor], torch.Tensor],
+            BatchTarget,
         ],
         batch_idx: int = 0,
     ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
@@ -231,23 +238,25 @@ class LitRankNet(pl.LightningModule):
         else:
             raise _NOT_RECOGNISED_INPUT_TYPE
 
-        return self._predict(new_batch, fun=pred_fun)
+        return self._predict(new_batch, pred_fun=pred_fun)
 
     def _predict(
         self,
         new_batch: Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor],
-        fun: Callable,
+        pred_fun: Callable,
         batch_idx: int = 0,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
 
-        dropout_out = []
+        dropout_out: List[torch.Tensor] = []
         if self.mc_dropout_samples > 1:
             enable_dropout(self.net, self.dropout_p)
 
         with torch.no_grad():
             for _ in range(self.mc_dropout_samples):
                 out = (
-                    fun(*new_batch) if isinstance(new_batch, tuple) else fun(new_batch)
+                    pred_fun(*new_batch)
+                    if isinstance(new_batch, tuple)
+                    else pred_fun(new_batch)
                 )
                 dropout_out.append(out)
 

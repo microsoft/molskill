@@ -2,8 +2,7 @@ import logging
 import sys
 
 
-# Idea borrowed from
-# https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/utils/logging.py
+# Adapted from https://github.com/microsoft/DeepSpeed/blob/master/deepspeed/utils/logging.py
 def get_logger(name: str = None, level: int = logging.INFO) -> logging.Logger:
     """Returns a logger that is configured as:
     - by default INFO level or higher messages are logged out in STDOUT.
