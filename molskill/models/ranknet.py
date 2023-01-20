@@ -13,7 +13,8 @@ _NOT_RECOGNISED_INPUT_TYPE = ValueError(
     "Not recognised input format, should be either tensor or tuple of tensors"
 )
 
-BatchTarget = Tuple[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]
+BatchPairNoTarget = Tuple[torch.Tensor, torch.Tensor]
+BatchPairTarget = Tuple[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]
 
 
 def compute_metrics(
@@ -156,7 +157,9 @@ class LitRankNet(pl.LightningModule):
         )
         return reg_loss
 
-    def get_scores_logit_target(self, batch: BatchTarget):
+    def get_scores_logit_target(
+        self, batch: BatchPairTarget
+    ) -> Tuple[Tuple[torch.Tensor, torch.Tensor, torch.Tensor], torch.Tensor]:
         (x_i, x_j), target = batch
         return self.net(x_i, x_j), target
 
@@ -169,7 +172,9 @@ class LitRankNet(pl.LightningModule):
         self.net.eval()
         return self.net.score(batch)
 
-    def training_step(self, train_batch: BatchTarget, batch_idx: int) -> torch.Tensor:
+    def training_step(
+        self, train_batch: BatchPairTarget, batch_idx: int
+    ) -> torch.Tensor:
         (score_i, score_j, logit), target = self.get_scores_logit_target(train_batch)
         loss = self.loss_fn(logit, target)
         reg_loss = self.get_reg_loss(score_i, score_j, self.regularization_factor)
@@ -180,7 +185,9 @@ class LitRankNet(pl.LightningModule):
         self.log("train/regloss", reg_loss.item())
         return loss + reg_loss
 
-    def validation_step(self, val_batch: BatchTarget, batch_idx: int) -> torch.Tensor:
+    def validation_step(
+        self, val_batch: BatchPairTarget, batch_idx: int
+    ) -> torch.Tensor:
         (score_i, score_j, logit), target = self.get_scores_logit_target(val_batch)
         loss = self.loss_fn(logit, target)
         reg_loss = self.get_reg_loss(score_i, score_j, self.regularization_factor)
@@ -192,7 +199,7 @@ class LitRankNet(pl.LightningModule):
         return loss + reg_loss
 
     def test_step(
-        self, test_batch: BatchTarget, batch_idx: int = 0
+        self, test_batch: BatchPairTarget, batch_idx: int = 0
     ) -> Dict[str, torch.Tensor]:
         (score_i, score_j, logit), target = self.get_scores_logit_target(test_batch)
 
@@ -208,11 +215,11 @@ class LitRankNet(pl.LightningModule):
         self,
         new_batch: Union[
             torch.Tensor,
-            Tuple[torch.Tensor, torch.Tensor],
-            BatchTarget,
+            BatchPairNoTarget,
+            BatchPairTarget,
         ],
         batch_idx: int = 0,
-    ) -> Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor]:
+    ) -> Union[BatchPairNoTarget, torch.Tensor]:
         """Test-time prediction method. When a tuple of Tensors is fed to `new_batch`, predictions as score
         differences between the tensors are returned. When a single Tensor is fed, a single score is returned.
         If MC dropout is set, predictions are returned as a tuple (mean, variance).
@@ -242,7 +249,7 @@ class LitRankNet(pl.LightningModule):
 
     def _predict(
         self,
-        new_batch: Union[Tuple[torch.Tensor, torch.Tensor], torch.Tensor],
+        new_batch: Union[BatchPairNoTarget, torch.Tensor],
         pred_fun: Callable,
         batch_idx: int = 0,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
