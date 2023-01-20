@@ -9,7 +9,6 @@ from molskill.models.utils import get_new_model_and_trainer
 from molskill.paths import MODEL_PATH
 
 
-
 @pytest.mark.parametrize("featurizer_name", list(AVAILABLE_FEATURIZERS.keys()))
 def test_loss_goes_down(pair_training_data, n_epochs, num_workers, featurizer_name):
     molrpr, target = pair_training_data
@@ -36,4 +35,5 @@ def test_loss_goes_down(pair_training_data, n_epochs, num_workers, featurizer_na
 
     trainer.fit(model, train_dataloaders=dataloader)
     loss = trainer.callback_metrics["train/loss"].item()
+    shutil.rmtree(test_model_dir)
     assert loss < initial_loss

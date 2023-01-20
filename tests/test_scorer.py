@@ -18,11 +18,13 @@ def test_scorer(
 
     litranknet = LitRankNet(
         dropout_p=dropout_p,
-        mc_dropout_samples=mc_dropout_samples,
         input_size=featurizer.dim(),
     )
     scorer = MolSkillScorer(
-        model=litranknet, featurizer=featurizer, num_workers=num_workers
+        model=litranknet,
+        featurizer=featurizer,
+        num_workers=num_workers,
+        mc_dropout_samples=mc_dropout_samples,
     )
     scores_out = scorer.score(molrpr=smiles_list)
     if mc_dropout_samples > 1:

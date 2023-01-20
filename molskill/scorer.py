@@ -22,6 +22,7 @@ class MolSkillScorer:
         featurizer: Optional[Featurizer] = None,
         num_workers: Optional[int] = None,
         verbose: bool = True,
+        mc_dropout_samples: int = 1,
     ):
         """Base MolSkill scorer class
 
@@ -34,6 +35,9 @@ class MolSkillScorer:
                         half the available threads.
             verbose (bool, optional): Controls verbosity of the lightning trainer class.
                     Defaults to True.
+            mc_dropout_samples (int, optional): If >1, the `score` method will return both
+                                                predicted scores and uncertainty estimates
+                                                using the Monte Carlo dropout method.
         """
         if featurizer is None:
             featurizer = get_featurizer("morgan_count_rdkit_2d")
@@ -49,6 +53,7 @@ class MolSkillScorer:
             )  # type: ignore
 
         self.model = model
+        self.model.mc_dropout_samples = mc_dropout_samples
 
         if num_workers is None:
             num_workers = multiprocessing.cpu_count() // 2
