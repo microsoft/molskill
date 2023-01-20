@@ -1,6 +1,4 @@
 import multiprocessing
-import os
-import tarfile
 from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
@@ -10,10 +8,9 @@ from rdkit.Chem import MolFromSmiles
 
 from molskill.data.dataloaders import get_dataloader
 from molskill.data.featurizers import Featurizer, get_featurizer
-from molskill.helpers.download import download
 from molskill.helpers.logging import get_logger
 from molskill.models.ranknet import LitRankNet
-from molskill.paths import DEFAULT_CHECKPOINT_PATH, DEFAULT_CHECKPOINT_REMOTE, ROOT_PATH
+from molskill.paths import DEFAULT_CHECKPOINT_PATH
 
 LOGGER = get_logger(__name__)
 
@@ -44,17 +41,12 @@ class MolSkillScorer:
         self.featurizer = featurizer
 
         if model is None:
-            if not os.path.exists(DEFAULT_CHECKPOINT_PATH):
-                LOGGER.info(
-                    f"Default model not present; downloading it from {DEFAULT_CHECKPOINT_REMOTE}..."
-                )
-                modelsgz = os.path.join(ROOT_PATH, "models.tar.gz")
-                download(DEFAULT_CHECKPOINT_REMOTE, modelsgz)
-
-                with tarfile.open(modelsgz, "r") as tarhandle:
-                    tarhandle.extractall(ROOT_PATH)
-
-            model = LitRankNet.load_from_checkpoint(checkpoint_path=DEFAULT_CHECKPOINT_PATH, input_size=featurizer.dim())  # type: ignore
+            LOGGER.info(
+                f"Model not specified. Using default from {DEFAULT_CHECKPOINT_PATH}."
+            )
+            model = LitRankNet.load_from_checkpoint(
+                checkpoint_path=DEFAULT_CHECKPOINT_PATH, input_size=featurizer.dim()
+            )  # type: ignore
 
         self.model = model
 
@@ -74,15 +66,15 @@ class MolSkillScorer:
         """Scores a list of compounds strings.
 
         Args:
-            cpds_strings (Union[List[str], List[Tuple[str, str]]]): A list of molecular strings,
-                                                                    or a list of tuples of molecular
-                                                                    strings if using paired data.
+            molrpr (Union[List[str], List[Tuple[str, str]]]): A list of molecular strings,
+                                                              or a list of tuples of molecular
+                                                              strings if using paired data.
             batch_size (int, optional): Batch size for inference. Defaults to 32.
             read_f (Callable, optional): rdkit function to read the molecular strings
                    in `cpds_strings`. Defaults to MolFromSmiles.
 
         Returns:
-            np.ndarray: Scores for the compounds provided
+            np.ndarray: Scores for the compounds in `molrpr` and (optionally) uncertainty values.
         """
         loader = get_dataloader(
             molrpr=molrpr,

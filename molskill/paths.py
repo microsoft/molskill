@@ -11,4 +11,3 @@ TEST_PATH = os.path.join(ROOT_PATH, "tests")
 DEFAULT_CHECKPOINT_PATH = os.path.join(
     MODEL_PATH, "default", "checkpoints", "last.ckpt"
 )
-DEFAULT_CHECKPOINT_REMOTE = "https://figshare.com/ndownloader/files/38855451"
