@@ -2,7 +2,7 @@
 
 [![ci](https://github.com/microsoft/molskill/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/molskill/actions/workflows/ci.yml)
 
-This repo contains associated code for the paper _MolSkill: Implcit molecular scoring via chemists in the loop_.
+This repo contains associated code for the paper _MolSkill: Implicit molecular scoring via chemists in the loop_.
 
 ## Installation
 
