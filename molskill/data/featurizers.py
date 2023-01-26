@@ -201,8 +201,12 @@ class Rdkit2dDescriptor(Featurizer):
         """
         if desc_list is None:
             desc_list = DESCRIPTORS_RDKIT
+
         self.normalize = normalize
         self.desc_list = desc_list
+
+        if self.normalize:
+            self.moments = get_population_moments(desc_list=self.desc_list)
 
     def _get_desc_calculator(self) -> MolecularDescriptorCalculator:
         return MolecularDescriptorCalculator(self.desc_list)
@@ -228,8 +232,6 @@ class Rdkit2dDescriptor(Featurizer):
     def desc_list(self, desc_list):
         self._desc_list = self._get_available_descriptors(desc_list)
         self.calculators = self._get_desc_calculator()
-        if self.normalize:
-            self.moments = get_population_moments(desc_list=self.desc_list)
 
     @property
     def available_descriptors(self) -> List[str]:
