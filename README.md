@@ -1,4 +1,4 @@
-# MolSkill
+# MolSkill 🤹⌬
 
 [![ci](https://github.com/microsoft/molskill/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/molskill/actions/workflows/ci.yml)
 
