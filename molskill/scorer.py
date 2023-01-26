@@ -119,3 +119,5 @@ class MolSkillScorer:
 
         with tarfile.open(targz_path) as tar_handle:
             tar_handle.extractall()
+
+        os.remove(targz_path)

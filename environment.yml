@@ -24,8 +24,5 @@ dependencies:
     - protobuf==3.20.1
     - pytorch-lightning==1.6.3
     - PubChemPy==1.0.4
-    - psycopg2==2.9.3
     - tensorboard==2.9.0
     - guacamol==0.5.4
-    - pytest-lazy-fixture==0.6.3
-    - pytest==7.2.0

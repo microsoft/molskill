@@ -28,10 +28,12 @@ jobs:
           auto-activate-base: false
       - run: |
           conda info
-          pip install pytest
+          pip install pytest pytest-lazy-fixture pytest-cov
+          curl -Os https://uploader.codecov.io/latest/linux/codecov
+          chmod +x codecov
         name: set pythonpath
       - run: |
           echo "PYTHONPATH=/home/runner/work/molskill/molskill" >> $GITHUB_ENV
         name: test
       - run: |
-          pytest
+          pytest --cov=molskill --cov-config=.coveragerc --cov-report=xml tests/

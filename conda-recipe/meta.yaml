@@ -21,6 +21,7 @@ requirements:
     - tqdm>=4.64.0
     - pytorch>=1.11
     - cudatoolkit>=11.3  # [linux64 or win64]
+    - rdkit>=2022.03.3
     - statsmodels>=0.13.2
     - pytorch-lightning>=1.6.3
     - tensorboard>=2.9.0
