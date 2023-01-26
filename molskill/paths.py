@@ -13,3 +13,4 @@ DEFAULT_CHECKPOINT_PATH = os.path.join(
 )
 
 DEFAULT_CHECKPOINT_REMOTE: str = "https://figshare.com/ndownloader/files/38956016"
+DEFAULT_MOMENTS_REMOTE: str = "https://figshare.com/ndownloader/files/38956727"

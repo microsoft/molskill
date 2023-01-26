@@ -22,5 +22,5 @@ jobs:
           auto-activate-base: false
       - run: |
           conda info
-          conda install conda-build anaconda-client --yes
-          cd conda-recipe && pkgs=$(conda build . | grep 'TEST START' | awk '{print $3}') && for pkg in ${pkgs};do anaconda -t ${{ secrets.CONDA_TOKEN }} upload -u msr-ai4science ${pkg}; done
+          conda install conda-build anaconda-client boa --yes
+          cd conda-recipe && pkgs=$(boa build . | grep 'TEST START' | awk '{print $3}') && for pkg in ${pkgs};do anaconda -t ${{ secrets.CONDA_TOKEN }} upload -u msr-ai4science ${pkg}; done

@@ -1,8 +1,11 @@
 import requests
 
-from molskill.paths import DEFAULT_CHECKPOINT_REMOTE
+from molskill.paths import DEFAULT_CHECKPOINT_REMOTE, DEFAULT_MOMENTS_REMOTE
+
+_ALL_REMOTES = [DEFAULT_CHECKPOINT_REMOTE, DEFAULT_MOMENTS_REMOTE]
 
 
 def test_default_model_link_isup():
-    r = requests.head(DEFAULT_CHECKPOINT_REMOTE)
-    assert r.ok
+    for remote in _ALL_REMOTES:
+        r = requests.head(remote)
+        assert r.ok
