@@ -118,6 +118,6 @@ class MolSkillScorer:
         download(remote_url, dest=targz_path)
 
         with tarfile.open(targz_path) as tar_handle:
-            tar_handle.extractall()
+            tar_handle.extractall(ROOT_PATH)
 
         os.remove(targz_path)
