@@ -1,4 +1,6 @@
 import multiprocessing
+import os
+import tarfile
 from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
@@ -8,9 +10,10 @@ from rdkit.Chem import MolFromSmiles
 
 from molskill.data.dataloaders import get_dataloader
 from molskill.data.featurizers import Featurizer, get_featurizer
+from molskill.helpers.download import download
 from molskill.helpers.logging import get_logger
 from molskill.models.ranknet import LitRankNet
-from molskill.paths import DEFAULT_CHECKPOINT_PATH
+from molskill.paths import DEFAULT_CHECKPOINT_PATH, DEFAULT_CHECKPOINT_REMOTE, ROOT_PATH
 
 LOGGER = get_logger(__name__)
 
@@ -48,6 +51,9 @@ class MolSkillScorer:
             LOGGER.info(
                 f"Model not specified. Using default from {DEFAULT_CHECKPOINT_PATH}."
             )
+            if not os.path.exists(DEFAULT_CHECKPOINT_PATH):
+                LOGGER.info("Default model not present. Downloading asset...")
+                self._download_default_model()
             model = LitRankNet.load_from_checkpoint(
                 checkpoint_path=DEFAULT_CHECKPOINT_PATH, input_size=featurizer.dim()
             )  # type: ignore
@@ -102,3 +108,14 @@ class MolSkillScorer:
             return torch.cat(scores_mean).numpy(), torch.cat(scores_var).numpy()
         else:
             return torch.cat(model_out).numpy()
+
+    @staticmethod
+    def _download_default_model(remote_url: str = DEFAULT_CHECKPOINT_REMOTE):
+        """Downloads default MolSkill model from remote. Was trained with `morgan_count_rdkit_2d`
+        featurizer
+        """
+        targz_path = os.path.join(ROOT_PATH, "models.tar.gz")
+        download(remote_url, dest=targz_path)
+
+        with tarfile.open(targz_path) as tar_handle:
+            tar_handle.extractall()
