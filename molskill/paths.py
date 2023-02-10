@@ -12,5 +12,5 @@ DEFAULT_CHECKPOINT_PATH = os.path.join(
     MODEL_PATH, "default", "checkpoints", "last.ckpt"
 )
 
-DEFAULT_CHECKPOINT_REMOTE: str = "https://figshare.com/ndownloader/files/38956016"
-DEFAULT_MOMENTS_REMOTE: str = "https://figshare.com/ndownloader/files/38956727"
+DEFAULT_CHECKPOINT_REMOTE: str = "TBD"
+DEFAULT_MOMENTS_REMOTE: str = "TBD"
