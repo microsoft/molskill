@@ -42,10 +42,14 @@ We provide and use by default a pre-trained model on all the data that was colle
 If you find this work or parts thereof useful, please consider citing the following BibTeX entry:
 
 ```
-@article{choung2023
-...
-}
-
+ @article{choung2023,
+          place={Cambridge},
+          title={Learning chemical intuition from humans in the loop},
+          DOI={10.26434/chemrxiv-2023-knwnv},
+          journal={ChemRxiv},
+          publisher={Cambridge Open Engage},
+          author={Choung, Oh-Hyeon and Vianello, Riccardo and Segler, Marwin and Stiefl, Nikolaus and Jiménez-Luna, José},
+          year={2023}}
 ```
 
 ## Contributing
