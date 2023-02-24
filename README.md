@@ -1,6 +1,8 @@
 # MolSkill 🤹⌬
 
 [![ci](https://github.com/microsoft/molskill/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/molskill/actions/workflows/ci.yml)
+[![Anaconda-Server Badge](https://anaconda.org/msr-ai4science/molskill/badges/platforms.svg)](https://anaconda.org/msr-ai4science/molskill)
+[![Anaconda-Server Badge](https://anaconda.org/msr-ai4science/molskill/badges/version.svg)](https://anaconda.org/msr-ai4science/molskill)
 
 This repo contains associated code for the paper _Learning chemical intuition from humans in the loop_.
 
