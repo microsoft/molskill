@@ -34,7 +34,7 @@ scores = scorer.score(smiles_strs)
 
 We provide and use by default a pre-trained model on all the data that was collected during the original study. If a user wants to train custom models, please check the `train.py` script also included under this repository.
 
-**Note**: We suggest that you pass the NIBR filters on your compounds before running the default scorer. We recommend doing this to avoid out-of-distribution biases, as the provided models have never seen a violating molecule during training time. The filters are nowadays available on the RDKit - a guide on how to apply those is provided [here](https://github.com/rdkit/rdkit/tree/master/Contrib/NIBRSubstructureFilters).
+**Note**: The default model and featurizer does not support non-organic elements or molecules with multiple fragments. Furthermore we suggest that you pass the NIBR filters on your compounds before running them through default scorer. We recommend doing this to avoid out-of-distribution biases, as the provided models have never seen a violating molecule during training time. The filters are nowadays available on the RDKit - a guide on how to apply those is provided [here](https://github.com/rdkit/rdkit/tree/master/Contrib/NIBRSubstructureFilters).
 
 
 ## Citing

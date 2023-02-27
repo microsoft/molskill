@@ -128,12 +128,12 @@ class PairDataset(BaseDataset):
     ]:
         molrpr_index = self.molrpr[index]
         mol_i, mol_j = self.read_f(molrpr_index[0]), self.read_f(molrpr_index[1])
-        fp_i, fp_j = self.get_desc(mol_i), self.get_desc(mol_j)
+        desc_i, desc_j = self.get_desc(mol_i), self.get_desc(mol_j)
         if self.target is not None:
             target = torch.FloatTensor([self.target[index]])
-            return (fp_i, fp_j), target
+            return (desc_i, desc_j), target
         else:
-            return (fp_i, fp_j)
+            return (desc_i, desc_j)
 
     def get_desc(self, mol: rdkit.Chem.rdchem.Mol):
         return torch.from_numpy(self.featurizer.get_feat(mol))
@@ -163,9 +163,9 @@ class SingleDataset(PairDataset):
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         molrpr_index = self.molrpr[index]
         mol = self.read_f(molrpr_index)
-        fp = self.get_desc(mol)
+        desc = self.get_desc(mol)
         if self.target is not None:
             target = torch.FloatTensor([self.target[index]])
-            return fp, target
+            return desc, target
         else:
-            return fp
+            return desc
