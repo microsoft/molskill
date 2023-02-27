@@ -1,6 +1,6 @@
 # MolSkill 🤹⌬
 
-[![ci](https://github.com/microsoft/molskill/actions/workflows/ci.yml/badge.svg)](https://github.com/microsoft/molskill/actions/workflows/ci.yml)
+[![ci](https://github.com/microsoft/molskill/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/microsoft/molskill/actions/workflows/ci.yml)
 [![Anaconda-Server Badge](https://anaconda.org/msr-ai4science/molskill/badges/platforms.svg)](https://anaconda.org/msr-ai4science/molskill)
 [![Anaconda-Server Badge](https://anaconda.org/msr-ai4science/molskill/badges/version.svg)](https://anaconda.org/msr-ai4science/molskill)
 
@@ -42,10 +42,14 @@ We provide and use by default a pre-trained model on all the data that was colle
 If you find this work or parts thereof useful, please consider citing the following BibTeX entry:
 
 ```
-@article{choung2023
-...
-}
-
+ @article{choung2023,
+          place={Cambridge},
+          title={Learning chemical intuition from humans in the loop},
+          DOI={10.26434/chemrxiv-2023-knwnv},
+          journal={ChemRxiv},
+          publisher={Cambridge Open Engage},
+          author={Choung, Oh-Hyeon and Vianello, Riccardo and Segler, Marwin and Stiefl, Nikolaus and Jiménez-Luna, José},
+          year={2023}}
 ```
 
 ## Contributing
