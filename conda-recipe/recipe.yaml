@@ -17,7 +17,6 @@ requirements:
     - setuptools
 
   run:
-    - matplotlib >=3.5.2
     - numpy >=1.23.1
     - pandas >=1.4.2
     - pip >=22.1.2
@@ -28,9 +27,7 @@ requirements:
     - pytorch >=1.11
     - sel(linux64): cudatoolkit >=11.3
     - rdkit >=2022.03.3
-    - statsmodels >=0.13.2
     - pytorch-lightning >=1.6.3
-    - tensorboard >=2.9.0
 
 about:
   home: https://github.com/microsoft/molskill
