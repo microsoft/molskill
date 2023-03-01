@@ -192,51 +192,40 @@ class AvalonFingerprint(FingerprintFeaturizer):
 @register_featurizer(name="rdkit_2d")
 class Rdkit2dDescriptor(Featurizer):
     def __init__(self, desc_list: Optional[List[str]] = None, normalize: bool = False):
-        """2d descriptor featurizer
+        """RDKit 2d descriptor featurizer
         Inspired by https://github.com/EBjerrum/scikit-mol/blob/main/scikit_mol/descriptors.py
 
         Args:
-            desc_list (Optional[List[str]], optional): list of descriptor to be used. Defaults to None.
-            normalize (bool, optional): normalize with precomputed ChEMBL population mean and variance
+            desc_list (Optional[List[str]], optional): List of descriptors to be used.
+            normalize (bool, optional): Whether to normalize descriptors with precomputed ChEMBL population mean and variance.
         """
         if desc_list is None:
             desc_list = DESCRIPTORS_RDKIT
 
+        self.desc_list = self._get_valid_descriptors(desc_list)
+        self.calculators = MolecularDescriptorCalculator(self.desc_list)
         self.normalize = normalize
-        self.desc_list = desc_list
 
         if self.normalize:
             self.moments = get_population_moments(desc_list=self.desc_list)
 
-    def _get_desc_calculator(self) -> MolecularDescriptorCalculator:
-        return MolecularDescriptorCalculator(self.desc_list)
-
-    def _get_available_descriptors(self, desc_list):
-        if desc_list:
-            unknown_descriptors = [
-                desc_name
-                for desc_name in desc_list
-                if desc_name not in self.available_descriptors
-            ]
-            assert not unknown_descriptors, f"""Unknown descriptor names {unknown_descriptors} specified,
-            please check available_descriptors property\nPlease check availble list {self.available_descriptors}"""
-        else:
-            desc_list = self.available_descriptors
+    def _get_valid_descriptors(self, desc_list: List[str]) -> List[str]:
+        """
+        Sanity checks that the provided descriptor names are valid.
+        """
+        unknown_descriptors = [
+            desc_name
+            for desc_name in desc_list
+            if desc_name not in self.available_descriptors()
+        ]
+        assert not unknown_descriptors, f"""Unknown descriptor names {unknown_descriptors} specified,\n
+        Must be a combination of: {self.available_descriptors}"""
         return desc_list
 
-    @property
-    def desc_list(self):
-        return self._desc_list
-
-    @desc_list.setter
-    def desc_list(self, desc_list):
-        self._desc_list = self._get_available_descriptors(desc_list)
-        self.calculators = self._get_desc_calculator()
-
-    @property
-    def available_descriptors(self) -> List[str]:
-        """Property to get list of all available descriptor names"""
-        return [descriptor[0] for descriptor in Descriptors._descList]
+    @staticmethod
+    def available_descriptors() -> List[str]:
+        """Lists all available descriptor names that can be used"""
+        return DESCRIPTORS_RDKIT
 
     @property
     def selected_descriptors(self) -> List[str]:
