@@ -2,13 +2,13 @@ context: {}
 package:
 
   name: molskill
-  version: '1.0'
+  version: '1.1'
 
 source:
   path: ../
 
 build:
-  number: 2
+  number: 1
 
 
 requirements:
@@ -20,7 +20,7 @@ requirements:
     - numpy >=1.23.1
     - pandas >=1.4.2
     - pip >=22.1.2
-    - python >=3.9
+    - python >=3.8
     - scikit-learn >=1.0.1
     - scipy >=1.8.1
     - tqdm >=4.64.0
