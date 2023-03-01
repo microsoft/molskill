@@ -8,7 +8,7 @@ This repo contains associated code for the paper _Learning chemical intuition fr
 
 ## Installation
 
-We recommend that you make a fresh conda environment (currently we only support Python 3.8-3.10 Linux builds) and install the provided conda package for convenience:
+We recommend that you make a fresh conda environment (currently we only support Python 3.9-3.10 Linux builds) and install the provided conda package for convenience:
 
 ```bash
 conda install molskill -c msr-ai4science -c conda-forge
