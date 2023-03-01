@@ -1,6 +1,5 @@
 context: {}
 package:
-
   name: molskill
   version: '1.1'
 
@@ -9,18 +8,18 @@ source:
 
 build:
   number: 1
-
+  script: python -m pip install .
 
 requirements:
   host:
     - python {{ python }}
-    - setuptools
-
+    - pip
+  
   run:
+    - python {{ python }}
+    - pip
     - numpy >=1.23.1
     - pandas >=1.4.2
-    - pip >=22.1.2
-    - python >=3.8
     - scikit-learn >=1.0.1
     - scipy >=1.8.1
     - tqdm >=4.64.0
@@ -28,6 +27,7 @@ requirements:
     - sel(linux64): cudatoolkit >=11.3
     - rdkit >=2022.03.3
     - pytorch-lightning >=1.6.3
+  
 
 about:
   home: https://github.com/microsoft/molskill
