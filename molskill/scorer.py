@@ -65,7 +65,11 @@ class MolSkillScorer:
             num_workers = multiprocessing.cpu_count() // 2
         self.num_workers = num_workers
         self.trainer = pl.Trainer(
-            accelerator="auto", devices=1, max_epochs=-1, logger=verbose
+            accelerator="auto",
+            devices=1,
+            max_epochs=-1,
+            logger=verbose,
+            enable_progress_bar=verbose,
         )
 
     def score(
