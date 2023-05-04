@@ -1,6 +1,7 @@
 import abc
+import os
 from functools import partial
-from typing import Dict, List, Optional, Set, Type
+from typing import Dict, List, Optional, Type, Union
 
 import numpy as np
 import rdkit
@@ -47,7 +48,7 @@ AVAILABLE_FP_FEATURIZERS: Dict[str, Type[FingerprintFeaturizer]] = {}
 AVAILABLE_FEATURIZERS: Dict[str, Type[Featurizer]] = {}
 
 
-DESCRIPTORS_RDKIT : List[str] = [
+DESCRIPTORS_RDKIT: List[str] = [
     "MaxAbsEStateIndex",
     "MaxEStateIndex",
     "MinAbsEStateIndex",
@@ -312,7 +313,12 @@ class AvalonFingerprint(FingerprintFeaturizer):
 
 @register_featurizer(name="rdkit_2d")
 class Rdkit2dDescriptor(Featurizer):
-    def __init__(self, desc_list: Optional[List[str]] = None, normalize: bool = False):
+    def __init__(
+        self,
+        desc_list: Optional[List[str]] = None,
+        normalize: bool = False,
+        moment_csv: Optional[Union[os.PathLike, str]] = None,
+    ):
         """RDKit 2d descriptor featurizer
         Inspired by https://github.com/EBjerrum/scikit-mol/blob/main/scikit_mol/descriptors.py
 
@@ -327,7 +333,9 @@ class Rdkit2dDescriptor(Featurizer):
         self.normalize = normalize
 
         if self.normalize:
-            self.moments = get_population_moments(desc_list=self.desc_list)
+            self.moments = get_population_moments(
+                desc_list=self.desc_list, moment_csv=moment_csv
+            )
 
     def _validate_descriptors(self, desc_list: List[str]):
         """
