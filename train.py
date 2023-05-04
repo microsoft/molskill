@@ -40,7 +40,7 @@ def train_ranknet(
         target (List[float]): Target values to train RankNet on ([0.0-1.0] range)
         save_dir (Optional[Union[str, os.PathLike]]): Directory to save trained model and results
         featurizer (Optional[Featurizer]): Featurizer to use when training the model. Default is count-based\
-                                           Morgan Fingerprints and normalized rdkit 2d descriptors.
+                                           Morgan Fingerprints and rdkit 2d descriptors.
         lr (float, optional): Initial learning rate. Defaults to 3e-4.
         regularization_factor (float, optional): Regularization factor for the learned scores. It is usually\
                                                  enough to set to a small value to guarantee 0-centering\
