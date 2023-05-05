@@ -1,11 +1,12 @@
 import abc
+import os
 from functools import partial
-from typing import Dict, List, Optional, Set, Type
+from typing import Dict, List, Optional, Type, Union
 
 import numpy as np
 import rdkit
 from rdkit.Avalon.pyAvalonTools import GetAvalonCountFP, GetAvalonFP
-from rdkit.Chem import AllChem, DataStructs, Descriptors
+from rdkit.Chem import AllChem, DataStructs
 from rdkit.ML.Descriptors.MoleculeDescriptors import MolecularDescriptorCalculator
 
 from molskill.data.standardization import get_population_moments
@@ -46,59 +47,180 @@ class FingerprintFeaturizer(Featurizer):
 AVAILABLE_FP_FEATURIZERS: Dict[str, Type[FingerprintFeaturizer]] = {}
 AVAILABLE_FEATURIZERS: Dict[str, Type[Featurizer]] = {}
 
-EXCLUDE_DESCRIPTORS_RDKIT: Set[str] = set(
-    [
-        "SMR_VSA8",
-        "SlogP_VSA9",
-        "fr_diazo",
-        "fr_isocyan",
-        "fr_isocyan",
-        "fr_isothiocyan",
-        "fr_prisulfonamd",
-        "fr_thiocyan",
-        "fr_AI_COO",
-        "fr_ArN",
-        "fr_Ar_COO",
-        "fr_C_S",
-        "fr_HOCCN",
-        "fr_Imine",
-        "fr_N_O",
-        "fr_SH",
-        "fr_aldehyde",
-        "fr_benzodiazepine",
-        "fr_furan",
-        "fr_guanido",
-        "fr_hdrzone",
-        "fr_imidazole",
-        "fr_imide",
-        "fr_morpholine",
-        "fr_nitrile",
-        "fr_oxazole",
-        "fr_oxime",
-        "fr_phos_acid",
-        "fr_phos_ester",
-        "fr_piperzine",
-        "fr_priamide",
-        "fr_sulfide",
-        "fr_sulfone",
-        "fr_term_acetylene",
-        "fr_tetrazole",
-        "fr_thiazole",
-        "fr_thiophene",
-        "Ipc",
-        "SubstructureMatches",
-        "Min_N_O_filter",
-        "Frac_N_O",
-        "Covalent",
-        "SpecialMol",
-        "SeverityScore",
-        "SeverityComment",
-    ]
-)
-DESCRIPTORS_RDKIT = [
-    descriptor[0]
-    for descriptor in Descriptors._descList
-    if descriptor[0] not in EXCLUDE_DESCRIPTORS_RDKIT
+
+DESCRIPTORS_RDKIT: List[str] = [
+    "MaxAbsEStateIndex",
+    "MaxEStateIndex",
+    "MinAbsEStateIndex",
+    "MinEStateIndex",
+    "qed",
+    "MolWt",
+    "HeavyAtomMolWt",
+    "ExactMolWt",
+    "NumValenceElectrons",
+    "NumRadicalElectrons",
+    "MaxPartialCharge",
+    "MinPartialCharge",
+    "MaxAbsPartialCharge",
+    "MinAbsPartialCharge",
+    "FpDensityMorgan1",
+    "FpDensityMorgan2",
+    "FpDensityMorgan3",
+    "BCUT2D_MWHI",
+    "BCUT2D_MWLOW",
+    "BCUT2D_CHGHI",
+    "BCUT2D_CHGLO",
+    "BCUT2D_LOGPHI",
+    "BCUT2D_LOGPLOW",
+    "BCUT2D_MRHI",
+    "BCUT2D_MRLOW",
+    "BalabanJ",
+    "BertzCT",
+    "Chi0",
+    "Chi0n",
+    "Chi0v",
+    "Chi1",
+    "Chi1n",
+    "Chi1v",
+    "Chi2n",
+    "Chi2v",
+    "Chi3n",
+    "Chi3v",
+    "Chi4n",
+    "Chi4v",
+    "HallKierAlpha",
+    "Kappa1",
+    "Kappa2",
+    "Kappa3",
+    "LabuteASA",
+    "PEOE_VSA1",
+    "PEOE_VSA10",
+    "PEOE_VSA11",
+    "PEOE_VSA12",
+    "PEOE_VSA13",
+    "PEOE_VSA14",
+    "PEOE_VSA2",
+    "PEOE_VSA3",
+    "PEOE_VSA4",
+    "PEOE_VSA5",
+    "PEOE_VSA6",
+    "PEOE_VSA7",
+    "PEOE_VSA8",
+    "PEOE_VSA9",
+    "SMR_VSA1",
+    "SMR_VSA10",
+    "SMR_VSA2",
+    "SMR_VSA3",
+    "SMR_VSA4",
+    "SMR_VSA5",
+    "SMR_VSA6",
+    "SMR_VSA7",
+    "SMR_VSA9",
+    "SlogP_VSA1",
+    "SlogP_VSA10",
+    "SlogP_VSA11",
+    "SlogP_VSA12",
+    "SlogP_VSA2",
+    "SlogP_VSA3",
+    "SlogP_VSA4",
+    "SlogP_VSA5",
+    "SlogP_VSA6",
+    "SlogP_VSA7",
+    "SlogP_VSA8",
+    "TPSA",
+    "EState_VSA1",
+    "EState_VSA10",
+    "EState_VSA11",
+    "EState_VSA2",
+    "EState_VSA3",
+    "EState_VSA4",
+    "EState_VSA5",
+    "EState_VSA6",
+    "EState_VSA7",
+    "EState_VSA8",
+    "EState_VSA9",
+    "VSA_EState1",
+    "VSA_EState10",
+    "VSA_EState2",
+    "VSA_EState3",
+    "VSA_EState4",
+    "VSA_EState5",
+    "VSA_EState6",
+    "VSA_EState7",
+    "VSA_EState8",
+    "VSA_EState9",
+    "FractionCSP3",
+    "HeavyAtomCount",
+    "NHOHCount",
+    "NOCount",
+    "NumAliphaticCarbocycles",
+    "NumAliphaticHeterocycles",
+    "NumAliphaticRings",
+    "NumAromaticCarbocycles",
+    "NumAromaticHeterocycles",
+    "NumAromaticRings",
+    "NumHAcceptors",
+    "NumHDonors",
+    "NumHeteroatoms",
+    "NumRotatableBonds",
+    "NumSaturatedCarbocycles",
+    "NumSaturatedHeterocycles",
+    "NumSaturatedRings",
+    "RingCount",
+    "MolLogP",
+    "MolMR",
+    "fr_Al_COO",
+    "fr_Al_OH",
+    "fr_Al_OH_noTert",
+    "fr_Ar_N",
+    "fr_Ar_NH",
+    "fr_Ar_OH",
+    "fr_COO",
+    "fr_COO2",
+    "fr_C_O",
+    "fr_C_O_noCOO",
+    "fr_NH0",
+    "fr_NH1",
+    "fr_NH2",
+    "fr_Ndealkylation1",
+    "fr_Ndealkylation2",
+    "fr_Nhpyrrole",
+    "fr_alkyl_carbamate",
+    "fr_alkyl_halide",
+    "fr_allylic_oxid",
+    "fr_amide",
+    "fr_amidine",
+    "fr_aniline",
+    "fr_aryl_methyl",
+    "fr_azide",
+    "fr_azo",
+    "fr_barbitur",
+    "fr_benzene",
+    "fr_bicyclic",
+    "fr_dihydropyridine",
+    "fr_epoxide",
+    "fr_ester",
+    "fr_ether",
+    "fr_halogen",
+    "fr_hdrzine",
+    "fr_ketone",
+    "fr_ketone_Topliss",
+    "fr_lactam",
+    "fr_lactone",
+    "fr_methoxy",
+    "fr_nitro",
+    "fr_nitro_arom",
+    "fr_nitro_arom_nonortho",
+    "fr_nitroso",
+    "fr_para_hydroxylation",
+    "fr_phenol",
+    "fr_phenol_noOrthoHbond",
+    "fr_piperdine",
+    "fr_pyridine",
+    "fr_quatN",
+    "fr_sulfonamd",
+    "fr_unbrch_alkane",
+    "fr_urea",
 ]
 
 
@@ -191,7 +313,12 @@ class AvalonFingerprint(FingerprintFeaturizer):
 
 @register_featurizer(name="rdkit_2d")
 class Rdkit2dDescriptor(Featurizer):
-    def __init__(self, desc_list: Optional[List[str]] = None, normalize: bool = False):
+    def __init__(
+        self,
+        desc_list: Optional[List[str]] = None,
+        normalize: bool = False,
+        moment_csv: Optional[Union[os.PathLike, str]] = None,
+    ):
         """RDKit 2d descriptor featurizer
         Inspired by https://github.com/EBjerrum/scikit-mol/blob/main/scikit_mol/descriptors.py
 
@@ -199,33 +326,16 @@ class Rdkit2dDescriptor(Featurizer):
             desc_list (Optional[List[str]], optional): List of descriptors to be used.
             normalize (bool, optional): Whether to normalize descriptors with precomputed ChEMBL population mean and variance.
         """
-        if desc_list is None:
-            desc_list = DESCRIPTORS_RDKIT
+        self.desc_list = DESCRIPTORS_RDKIT if desc_list is None else desc_list
 
-        self.desc_list = self._get_valid_descriptors(desc_list)
+        _validate_rdkit_descriptors(self.desc_list)
         self.calculators = MolecularDescriptorCalculator(self.desc_list)
         self.normalize = normalize
 
         if self.normalize:
-            self.moments = get_population_moments(desc_list=self.desc_list)
-
-    def _get_valid_descriptors(self, desc_list: List[str]) -> List[str]:
-        """
-        Sanity checks that the provided descriptor names are valid.
-        """
-        unknown_descriptors = [
-            desc_name
-            for desc_name in desc_list
-            if desc_name not in self.available_descriptors()
-        ]
-        assert not unknown_descriptors, f"""Unknown descriptor names {unknown_descriptors} specified,\n
-        Must be a combination of: {self.available_descriptors}"""
-        return desc_list
-
-    @staticmethod
-    def available_descriptors() -> List[str]:
-        """Lists all available descriptor names that can be used"""
-        return DESCRIPTORS_RDKIT
+            self.moments = get_population_moments(
+                desc_list=self.desc_list, moment_csv=moment_csv
+            )
 
     @property
     def selected_descriptors(self) -> List[str]:
@@ -241,6 +351,17 @@ class Rdkit2dDescriptor(Featurizer):
 
     def dim(self) -> int:
         return len(self.desc_list)
+
+
+def _validate_rdkit_descriptors(desc_list: List[str]) -> None:
+    """
+    Sanity checks that the provided descriptor names are valid.
+    """
+    unknown_descriptors = [
+        desc_name for desc_name in desc_list if desc_name not in DESCRIPTORS_RDKIT
+    ]
+    assert not unknown_descriptors, f"""Unknown descriptor names {unknown_descriptors} specified,\n
+    Must be a combination of: {DESCRIPTORS_RDKIT}"""
 
 
 def get_featurizer(featurizer_name: str, **kwargs) -> Featurizer:

@@ -16,6 +16,7 @@ from molskill.models.ranknet import LitRankNet
 from molskill.paths import DEFAULT_CHECKPOINT_PATH, DEFAULT_CHECKPOINT_REMOTE, ROOT_PATH
 
 LOGGER = get_logger(__name__)
+DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
 
 class MolSkillScorer:
@@ -55,7 +56,9 @@ class MolSkillScorer:
                 LOGGER.info("Default model not present. Downloading asset...")
                 self._download_default_model()
             model = LitRankNet.load_from_checkpoint(
-                checkpoint_path=DEFAULT_CHECKPOINT_PATH, input_size=featurizer.dim()
+                checkpoint_path=DEFAULT_CHECKPOINT_PATH,
+                input_size=featurizer.dim(),
+                map_location=DEVICE,
             )  # type: ignore
 
         self.model = model
