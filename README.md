@@ -11,10 +11,10 @@ This repo contains associated code for the paper _Learning chemical intuition fr
 We recommend that you make a fresh conda environment (currently we only support Python 3.9-3.10 Linux builds) and install the provided conda package for convenience:
 
 ```bash
-conda install molskill=*=py3x -c msr-ai4science -c conda-forge
+conda install molskill=*=py3{x}* -c msr-ai4science -c conda-forge
 ```
 
-Please substitute `x` above by either `9` or `10` depending on your python version. Additionally, you can also use the provided `environment.yml` file for manual installation.
+Please substitute `{x}` above by either `9` or `10` depending on your python version. Additionally, you can also use the provided `environment.yml` file for manual installation.
 
 A CUDA-enabled GPU is not required for usage, but strongly recommended for speed if you plan on scoring a large amount of compounds. 
 

@@ -328,7 +328,7 @@ class Rdkit2dDescriptor(Featurizer):
         """
         self.desc_list = DESCRIPTORS_RDKIT if desc_list is None else desc_list
 
-        self._validate_descriptors(self.desc_list)
+        _validate_rdkit_descriptors(self.desc_list)
         self.calculators = MolecularDescriptorCalculator(self.desc_list)
         self.normalize = normalize
 
@@ -336,16 +336,6 @@ class Rdkit2dDescriptor(Featurizer):
             self.moments = get_population_moments(
                 desc_list=self.desc_list, moment_csv=moment_csv
             )
-
-    def _validate_descriptors(self, desc_list: List[str]):
-        """
-        Sanity checks that the provided descriptor names are valid.
-        """
-        unknown_descriptors = [
-            desc_name for desc_name in desc_list if desc_name not in DESCRIPTORS_RDKIT
-        ]
-        assert not unknown_descriptors, f"""Unknown descriptor names {unknown_descriptors} specified,\n
-        Must be a combination of: {DESCRIPTORS_RDKIT}"""
 
     @property
     def selected_descriptors(self) -> List[str]:
@@ -361,6 +351,17 @@ class Rdkit2dDescriptor(Featurizer):
 
     def dim(self) -> int:
         return len(self.desc_list)
+
+
+def _validate_rdkit_descriptors(desc_list: List[str]) -> None:
+    """
+    Sanity checks that the provided descriptor names are valid.
+    """
+    unknown_descriptors = [
+        desc_name for desc_name in desc_list if desc_name not in DESCRIPTORS_RDKIT
+    ]
+    assert not unknown_descriptors, f"""Unknown descriptor names {unknown_descriptors} specified,\n
+    Must be a combination of: {DESCRIPTORS_RDKIT}"""
 
 
 def get_featurizer(featurizer_name: str, **kwargs) -> Featurizer:
