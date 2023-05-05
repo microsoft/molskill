@@ -23,4 +23,4 @@ jobs:
       - run: |
           conda info
           conda install conda-build anaconda-client boa --yes
-          pkgs=$(boa build molskill/conda-recipe/ | grep 'TEST START' | awk '{print $3}') && for pkg in ${pkgs};do anaconda -t ${{ secrets.CONDA_TOKEN }} upload -u msr-ai4science ${pkg}; done
+          pkgs=$(boa build molskill/conda-recipe/ | grep 'TEST START' | sed 's/TEST START://g') && for pkg in ${pkgs};do anaconda -t ${{ secrets.CONDA_TOKEN }} upload -u msr-ai4science ${pkg}; done
