@@ -7,7 +7,7 @@ source:
   path: ../
 
 build:
-  number: 3
+  number: 4
   script: python -m pip install .
 
 requirements:
