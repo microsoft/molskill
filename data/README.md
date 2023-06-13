@@ -1,0 +1,8 @@
+This directory contains several datasets used throughout the study. In summary:
+
+* `production_public.csv` contains information in regards to the molecule pairs presented to the participants of the study during the production runs (a bit over 5000 pairs). The binary label indicates whether the `smiles_j` compound was chosen (1) or not (0).
+* `pre_r{1, 2}.csv` contains participant responses for the first and second preliminary rounds of the study.
+* `fragment_scores.csv` contains ~8000 fragments extracted using [BRICS](https://chemistry-europe.onlinelibrary.wiley.com/doi/10.1002/cmdc.200800178) from the training data extracted from ChEMBL, their associated MolSkill scores as well as their frequency. This was used as part of the analyses for Figure 5 in the main manuscript.
+* `smilesrnnhc_{best|worst}_target9_coef1.0.csv` contains de novo generated molecules using the SMILES RNN algorithm and hill climbing optimization as made available by the [GuacaMol](https://github.com/BenevolentAI/guacamol_baselines) baselines python package, and using ZINC250k as the baseline library. Generated molecules were biased to have MolSkill scores close to either `-9` or `9` (for `best` and `worst` files, respectively, as seen on Figure 6). The default RNN model accompanied by `SquaredModifier` score modifier class with a coefficient of `1.0` were used for these analyses.
+* `other_dbs/*.csv` contain data in regards to the analyses run for Figure 4 in the study. Specifically, NIBR-filtered compounds for ChEMBL, the FDA-approved DrugBank, and the GDB extracted sets are present here.
+* `assets/chembl_population_mean_std.csv` contains population level statistics that are used during default model training/evaluation for normalization of the descriptors used. 
