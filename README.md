@@ -4,7 +4,7 @@
 [![Anaconda-Server Badge](https://anaconda.org/msr-ai4science/molskill/badges/platforms.svg)](https://anaconda.org/msr-ai4science/molskill)
 [![Anaconda-Server Badge](https://anaconda.org/msr-ai4science/molskill/badges/version.svg)](https://anaconda.org/msr-ai4science/molskill)
 
-This repo contains associated code for the paper _Learning chemical intuition from humans in the loop_.
+This repo contains associated code for the paper _Extracting medicinal chemistry intuition via preference machine learning_ as available on [Nature Communications](https://www.nature.com/articles/s41467-023-42242-1).
 
 ## Installation
 
