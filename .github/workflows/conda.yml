@@ -24,13 +24,16 @@ jobs:
           condarc-file: conda-recipe/.condarc
           python-version: 3.9
           auto-activate-base: false
-      - name: Build and upload conda package
-        env:
-          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+      - name: Build conda package
         run: |
           conda info
           conda install conda-build anaconda-client boa --yes
           pkgs=$(boa build conda-recipe/ | grep 'TEST START' | sed 's/TEST START://g')
-          for pkg in ${pkgs}; do
+          echo "BUILT_CONDA_PACKAGES=${pkgs}" >> "$GITHUB_ENV"
+      - name: Publish to Anaconda
+        env:
+          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+        run: |
+          for pkg in ${BUILT_CONDA_PACKAGES}; do
             anaconda -t "${ANACONDA_API_TOKEN}" upload -u msr-ai4science "${pkg}"
           done
