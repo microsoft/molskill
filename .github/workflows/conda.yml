@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   linux:
-    if: ${{ contains(fromJSON(vars.RELEASE_WORKFLOW_ALLOWED_ACTORS || '[]'), github.actor) }}
     environment: conda-release
     runs-on: "ubuntu-latest"
     defaults:
