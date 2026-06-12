@@ -5,22 +5,68 @@ on:
     types:
       - published
 
+permissions:
+  contents: read
+
 jobs:
-  linux:
-    runs-on: "ubuntu-latest"
+  build-linux:
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v4
+
+      - uses: conda-incubator/setup-miniconda@v3
         with:
           activate-environment: molskill
           environment-file: environment.yml
           condarc-file: conda-recipe/.condarc
           python-version: 3.9
           auto-activate-base: false
-      - run: |
+
+      - name: Build conda package
+        run: |
           conda info
           conda install conda-build anaconda-client boa --yes
-          pkgs=$(boa build molskill/conda-recipe/ | grep 'TEST START' | sed 's/TEST START://g') && for pkg in ${pkgs};do anaconda -t ${{ secrets.CONDA_TOKEN }} upload -u msr-ai4science ${pkg}; done
+          boa build conda-recipe/
+
+      - name: Collect packages
+        run: |
+          mkdir -p dist-conda
+          find "$CONDA_PREFIX/../conda-bld" \
+            \( -name '*.conda' -o -name '*.tar.bz2' \) \
+            -type f \
+            -print \
+            -exec cp {} dist-conda/ \;
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: conda-packages-linux
+          path: dist-conda/*
+
+  publish:
+    needs: build-linux
+    environment: conda-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: conda-packages-linux
+          path: dist-conda
+
+      - uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: true
+
+      - name: Install uploader
+        run: conda install anaconda-client --yes
+
+      - name: Publish to Anaconda
+        env:
+          ANACONDA_API_TOKEN: ${{ secrets.ANACONDA_API_TOKEN }}
+        run: |
+          shopt -s nullglob
+          for pkg in dist-conda/*.conda dist-conda/*.tar.bz2; do
+            anaconda -t "${ANACONDA_API_TOKEN}" upload -u msr-ai4science "${pkg}"
+          done
