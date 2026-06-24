@@ -29,11 +29,12 @@ def get_population_moments(
         Dict[str, np.ndarray]: population {mean: np.ndarray, std: np.ndarray}
     """
 
-    if moment_csv is None and (not os.path.exists(MOMENT_CSV)) or (os.path.getsize(MOMENT_CSV) == 0):
-        LOGGER.info("Standardization moments not found. Downloading from remote...")
+    if moment_csv is None:
         moment_csv = MOMENT_CSV
-        os.makedirs(ASSET_PATH, exist_ok=True)
-        download(DEFAULT_MOMENTS_REMOTE, moment_csv)
+        if (not os.path.exists(moment_csv)) or (os.path.getsize(moment_csv) == 0):
+            LOGGER.info("Standardization moments not found. Downloading from remote...")
+            os.makedirs(ASSET_PATH, exist_ok=True)
+            download(DEFAULT_MOMENTS_REMOTE, moment_csv)
 
     population_df = pd.read_csv(moment_csv, index_col="descriptor")
     assert set(population_df.keys()) == {
