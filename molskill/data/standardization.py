@@ -29,7 +29,7 @@ def get_population_moments(
         Dict[str, np.ndarray]: population {mean: np.ndarray, std: np.ndarray}
     """
 
-    if moment_csv is None:
+    if moment_csv is None and not os.path.exists(MOMENT_CSV):
         LOGGER.info("Standardization moments not found. Downloading from remote...")
         moment_csv = MOMENT_CSV
         os.makedirs(ASSET_PATH, exist_ok=True)
