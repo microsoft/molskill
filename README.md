@@ -29,7 +29,7 @@ from molskill.scorer import MolSkillScorer
 smiles_strs = ["CCO", "O=C(Oc1ccccc1C(=O)O)C"] 
 
 scorer = MolSkillScorer()
-scores = scorer.score(smiles_strs)
+scores = scorer.score(smiles_strs)  # [ 19.531034 -11.309371]
 ```
 
 We provide and use by default a pre-trained model on all the data that was collected during the original study. If a user wants to train custom models, please check the `train.py` script also included under this repository.
