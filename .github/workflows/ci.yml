@@ -36,7 +36,7 @@ jobs:
           auto-activate-base: false
       - run: |
           conda info
-          pip install pytest pytest-lazy-fixture pytest-cov
+          pip install pytest pytest-cov
           curl -Os https://uploader.codecov.io/latest/linux/codecov
           chmod +x codecov
         name: set pythonpath
