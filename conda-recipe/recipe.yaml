@@ -23,6 +23,7 @@ requirements:
     - scikit-learn >=1.0.1
     - scipy >=1.8.1
     - tqdm >=4.64.0
+    - requests
     - pytorch >=1.11
     - sel(linux64): cudatoolkit >=11.3
     - rdkit >=2022.03.3
@@ -38,4 +39,3 @@ about:
 extra:
   recipe-maintainers:
     - josejimenezluna
-
