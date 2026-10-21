@@ -16,6 +16,8 @@ conda install molskill=*=py3{x}* -c msr-ai4science -c conda-forge
 
 Please substitute `{x}` above by either `9` or `10` depending on your python version. Additionally, you can also use the provided `environment.yml` file for manual installation.
 
+The historical Lightning 1.6.3 package requires `pip<24.1` because newer pip versions reject its legacy dependency metadata. CI constrains the installer accordingly without changing the application dependency versions.
+
 A CUDA-enabled GPU is not required for usage, but strongly recommended for speed if you plan on scoring a large amount of compounds. 
 
 

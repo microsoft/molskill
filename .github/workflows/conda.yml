@@ -20,6 +20,9 @@ jobs:
           persist-credentials: false
 
       - uses: conda-incubator/setup-miniconda@fc2d68f6413eb2d87b895e92f8584b5b94a10167 # v3.3.0
+        env:
+          # Lightning 1.6.3 has legacy metadata rejected by newer pip.
+          CONDA_PINNED_PACKAGES: "pip<24.1"
         with:
           activate-environment: molskill
           environment-file: environment.yml
