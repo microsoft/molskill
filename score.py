@@ -25,6 +25,17 @@ if __name__ == "__main__":
         help="Path to model checkpoint (`.ckpt`) file.",
     )
     parser.add_argument(
+        "--trust_model_ckpt",
+        action="store_true",
+        help="Acknowledge that the custom checkpoint is trusted and may execute Python code.",
+    )
+    parser.add_argument(
+        "--model_ckpt_sha256",
+        type=str,
+        default=None,
+        help="SHA-256 of the custom checkpoint, obtained from a trusted source.",
+    )
+    parser.add_argument(
         "--featurizer_name",
         choices=list(AVAILABLE_FEATURIZERS.keys()),
         default="morgan_count_rdkit_2d",
@@ -51,6 +62,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if args.model_ckpt is not None:
+        if not args.trust_model_ckpt or args.model_ckpt_sha256 is None:
+            parser.error(
+                "--model_ckpt requires --trust_model_ckpt and --model_ckpt_sha256. "
+                "Legacy checkpoints may execute Python code; only load trusted models."
+            )
+    elif args.trust_model_ckpt or args.model_ckpt_sha256 is not None:
+        parser.error("Custom checkpoint options require --model_ckpt.")
+
     cpd_df = pd.read_csv(args.compound_csv)
     molrpr = cpd_df[args.smiles_col].tolist()
 
@@ -58,7 +78,11 @@ if __name__ == "__main__":
     featurizer = get_featurizer(args.featurizer_name)
 
     model = (
-        LitRankNet.load_from_checkpoint(args.model_ckpt, input_size=featurizer.dim())
+        LitRankNet.load_verified_checkpoint(
+            args.model_ckpt,
+            sha256=args.model_ckpt_sha256,
+            input_size=featurizer.dim(),
+        )
         if args.model_ckpt is not None
         else None
     )

@@ -12,5 +12,11 @@ DEFAULT_CHECKPOINT_PATH = os.path.join(
     MODEL_PATH, "default", "checkpoints", "last.ckpt"
 )
 
-DEFAULT_CHECKPOINT_REMOTE: str = "https://figshare.com/ndownloader/files/40451207"
-DEFAULT_MOMENTS_REMOTE: str = "https://figshare.com/ndownloader/files/38956727"
+DEFAULT_CHECKPOINT_REMOTE: str = "https://ndownloader.figshare.com/files/40451207"
+DEFAULT_MOMENTS_REMOTE: str = "https://ndownloader.figshare.com/files/38956727"
+DEFAULT_CHECKPOINT_ARCHIVE_SHA256 = (
+    "9335ec4a46a15748df39dd27da27cc272b5aef045c3df24b134f51950feb07a1"
+)
+DEFAULT_CHECKPOINT_SHA256 = (
+    "ee0460a09baadb8188f22c84ede59c4b5b7d55871a76dadf6829a45ed11dc90a"
+)

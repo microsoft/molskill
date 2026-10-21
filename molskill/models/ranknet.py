@@ -1,4 +1,6 @@
 from functools import partial
+from io import BytesIO
+from pathlib import Path
 from typing import Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import numpy as np
@@ -8,6 +10,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from sklearn.metrics import roc_auc_score
 from torch.optim import Adam
+
+from molskill.helpers.download import verify_sha256
 
 _NOT_RECOGNISED_INPUT_TYPE = ValueError(
     "Not recognised input format, should be either tensor or tuple of tensors"
@@ -141,6 +145,27 @@ class LitRankNet(pl.LightningModule):
         self.dropout_p = dropout_p
         self.mc_dropout_samples = mc_dropout_samples
         self.sigmoid = sigmoid
+
+    @classmethod
+    def load_verified_checkpoint(
+        cls,
+        checkpoint_path: Union[str, Path],
+        sha256: str,
+        input_size: int,
+        map_location: Optional[Union[str, torch.device]] = None,
+    ) -> "LitRankNet":
+        """Load only bytes authenticated against a trusted checkpoint digest.
+
+        Legacy Lightning checkpoints use pickle and can execute Python code. A matching digest
+        does not make an untrusted checkpoint safe; obtain the digest from a trusted publisher.
+        """
+        checkpoint_bytes = Path(checkpoint_path).read_bytes()
+        verify_sha256(checkpoint_bytes, sha256)
+        return cls.load_from_checkpoint(
+            checkpoint_path=BytesIO(checkpoint_bytes),
+            input_size=input_size,
+            map_location=map_location,
+        )
 
     @staticmethod
     def get_reg_loss(
