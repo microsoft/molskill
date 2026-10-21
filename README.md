@@ -16,6 +16,8 @@ conda install molskill=*=py3{x}* -c msr-ai4science -c conda-forge
 
 Please substitute `{x}` above by either `9` or `10` depending on your python version. Additionally, you can also use the provided `environment.yml` file for manual installation.
 
+The historical Lightning 1.6.3 package requires `pip<24.1` because newer pip versions reject its legacy dependency metadata. CI constrains the installer accordingly without changing the application dependency versions.
+
 A CUDA-enabled GPU is not required for usage, but strongly recommended for speed if you plan on scoring a large amount of compounds. 
 
 
@@ -36,6 +38,24 @@ We provide and use by default a pre-trained model on all the data that was colle
 
 **Note**: The default model and featurizer does not support non-organic elements or molecules with multiple fragments. Furthermore we suggest that you pass the NIBR filters on your compounds before running them through default scorer. We recommend doing this to avoid out-of-distribution biases, as the provided models have never seen a violating molecule during training time. The filters are nowadays available on the RDKit - a guide on how to apply those is provided [here](https://github.com/rdkit/rdkit/tree/master/Contrib/NIBRSubstructureFilters).
 
+
+## Checkpoint safety
+
+The default model archive and checkpoint are authenticated against SHA-256 digests pinned in the source code. Only the expected regular checkpoint file is copied from the archive; archive paths and links are never extracted. Cached checkpoints are verified on every load, and the exact verified bytes are passed to Lightning.
+
+An integrity failure raises an error rather than loading the file. If a cached default checkpoint is corrupt, remove `models/default/checkpoints/last.ckpt` and retry the download. Do not replace the pinned digests merely to suppress a mismatch.
+
+Legacy Lightning checkpoints use pickle and can execute Python code. These checks authenticate the published default model; they do not make arbitrary checkpoints safe or fix vulnerabilities in the legacy dependencies. Dependency versions are unchanged.
+
+Custom checkpoints must come from a trusted source. The scoring CLI requires both an explicit trust acknowledgement and a SHA-256 obtained from that trusted source:
+
+```bash
+python score.py --compound_csv compounds.csv --output_csv scores.csv \
+    --model_ckpt trusted_model.ckpt --trust_model_ckpt \
+    --model_ckpt_sha256 <trusted-publisher-sha256>
+```
+
+Computing a checksum of an untrusted file does not establish trust. For programmatic loading, use `LitRankNet.load_verified_checkpoint(checkpoint_path, sha256, input_size)` with a trusted digest, then pass the resulting model to `MolSkillScorer`. Direct use of Lightning's `load_from_checkpoint` bypasses these checks and must only be used with trusted files.
 
 ## Citing
 

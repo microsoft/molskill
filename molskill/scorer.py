@@ -1,6 +1,8 @@
 import multiprocessing
 import os
 import tarfile
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Callable, List, Optional, Tuple, Union
 
 import numpy as np
@@ -10,10 +12,15 @@ from rdkit.Chem import MolFromSmiles
 
 from molskill.data.dataloaders import get_dataloader
 from molskill.data.featurizers import Featurizer, get_featurizer
-from molskill.helpers.download import download
+from molskill.helpers.download import download, verify_sha256
 from molskill.helpers.logging import get_logger
 from molskill.models.ranknet import LitRankNet
-from molskill.paths import DEFAULT_CHECKPOINT_PATH, DEFAULT_CHECKPOINT_REMOTE, ROOT_PATH
+from molskill.paths import (
+    DEFAULT_CHECKPOINT_ARCHIVE_SHA256,
+    DEFAULT_CHECKPOINT_PATH,
+    DEFAULT_CHECKPOINT_REMOTE,
+    DEFAULT_CHECKPOINT_SHA256,
+)
 
 LOGGER = get_logger(__name__)
 DEVICE = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -55,11 +62,12 @@ class MolSkillScorer:
             if not os.path.exists(DEFAULT_CHECKPOINT_PATH):
                 LOGGER.info("Default model not present. Downloading asset...")
                 self._download_default_model()
-            model = LitRankNet.load_from_checkpoint(
+            model = LitRankNet.load_verified_checkpoint(
                 checkpoint_path=DEFAULT_CHECKPOINT_PATH,
+                sha256=DEFAULT_CHECKPOINT_SHA256,
                 input_size=featurizer.dim(),
                 map_location=DEVICE,
-            )  # type: ignore
+            )
 
         self.model = model
         self.model.mc_dropout_samples = mc_dropout_samples
@@ -117,14 +125,37 @@ class MolSkillScorer:
             return torch.cat(model_out).numpy()
 
     @staticmethod
-    def _download_default_model(remote_url: str = DEFAULT_CHECKPOINT_REMOTE):
+    def _download_default_model(
+        remote_url: str = DEFAULT_CHECKPOINT_REMOTE,
+    ) -> None:
         """Downloads default MolSkill model from remote. Was trained with `morgan_count_rdkit_2d`
         featurizer
         """
-        targz_path = os.path.join(ROOT_PATH, "models.tar.gz")
-        download(remote_url, dest=targz_path)
-
-        with tarfile.open(targz_path) as tar_handle:
-            tar_handle.extractall(ROOT_PATH)
-
-        os.remove(targz_path)
+        checkpoint_path = Path(DEFAULT_CHECKPOINT_PATH)
+        checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+        with TemporaryDirectory(dir=checkpoint_path.parent) as temp_dir:
+            targz_path = Path(temp_dir) / "models.tar.gz"
+            download(
+                remote_url,
+                dest=str(targz_path),
+                sha256=DEFAULT_CHECKPOINT_ARCHIVE_SHA256,
+            )
+            with tarfile.open(targz_path, "r:gz") as tar_handle:
+                members = [
+                    member
+                    for member in tar_handle.getmembers()
+                    if member.name == "models/default/checkpoints/last.ckpt"
+                ]
+                if len(members) != 1 or not members[0].isfile():
+                    raise ValueError(
+                        "Expected one regular default checkpoint in archive."
+                    )
+                checkpoint_file = tar_handle.extractfile(members[0])
+                if checkpoint_file is None:
+                    raise ValueError("Default checkpoint cannot be read from archive.")
+                with checkpoint_file:
+                    checkpoint_bytes = checkpoint_file.read()
+            verify_sha256(checkpoint_bytes, DEFAULT_CHECKPOINT_SHA256)
+            temporary_checkpoint = Path(temp_dir) / "last.ckpt"
+            temporary_checkpoint.write_bytes(checkpoint_bytes)
+            temporary_checkpoint.replace(checkpoint_path)
